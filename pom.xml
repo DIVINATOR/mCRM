@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.divinator</groupId>
+  <artifactId>miniCRM</artifactId>
+  <version>0.0.1-alpha</version>
+
+  <name>miniCRM</name>
+  <!-- FIXME change it to the project's website -->
+  <url>http://www.example.com</url>
+  <description>Project JavaFX on Spring Boot</description>
+  <packaging>jar</packaging>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <build.lib>${project.build.directory}/lib</build.lib>
+    <build.bin>${project.build.directory}/bin</build.bin>
+    <build.name.app>${name}</build.name.app>
+    <build.app.version>0.0.3.0</build.app.version>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <start-class>io.github.divinator.App</start-class>
+  </properties>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.3.4.RELEASE</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.annotation</groupId>
+          <artifactId>jakarta.annotation-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jdbc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--    Сборка через Spring-->
+<!--      <plugin>-->
+<!--        <groupId>org.springframework.boot</groupId>-->
+<!--        <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--        <configuration>-->
+<!--          <excludes>-->
+<!--            <exclude>-->
+<!--              <groupId>org.springframework.boot</groupId>-->
+<!--              <artifactId>spring-boot-configuration-processor</artifactId>-->
+<!--            </exclude>-->
+<!--          </excludes>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <goals>-->
+<!--              <goal>repackage</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
+
+      <!--    Сборка через Maven-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+          <!--  <addClasspath>true</addClasspath>-->
+          <!--  <classpathPrefix>lib/</classpathPrefix>-->
+              <mainClass>${start-class}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!--            <plugin>-->
+      <!--                <groupId>org.apache.maven.plugins</groupId>-->
+      <!--                <artifactId>maven-dependency-plugin</artifactId>-->
+      <!--                <version>3.1.2</version>-->
+      <!--                <executions>-->
+      <!--                    <execution>-->
+      <!--                        <id>copy-dependencies</id>-->
+      <!--                        <phase>package</phase>-->
+      <!--                        <goals>-->
+      <!--                            <goal>copy-dependencies</goal>-->
+      <!--                        </goals>-->
+      <!--                        <configuration>-->
+      <!--                            <outputDirectory>${build.lib}</outputDirectory>-->
+      <!--                            <overWriteReleases>false</overWriteReleases>-->
+      <!--                            <overWriteSnapshots>false</overWriteSnapshots>-->
+      <!--                            <overWriteIfNewer>true</overWriteIfNewer>-->
+      <!--                        </configuration>-->
+      <!--                    </execution>-->
+      <!--                </executions>-->
+      <!--            </plugin>-->
+
+      <plugin>
+        <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
+        <artifactId>launch4j-plugin</artifactId>
+        <version>1.5.0.0</version>
+        <executions>
+          <execution>
+            <id>l4j-gui</id>
+            <phase>package</phase>
+            <goals>
+              <goal>launch4j</goal>
+            </goals>
+            <configuration>
+              <headerType>gui</headerType>
+              <outfile>target/${project.name}.exe</outfile>
+              <jar>target/ksenia-0.0.3-alpha.jar</jar> <!-- 'shaded' is the value set on shadedClassifierName above -->
+              <errTitle>App Err</errTitle>
+              <classPath>
+                <mainClass>${start-class}</mainClass>
+              </classPath>
+              <icon>src/main/resources/icon.ico</icon>
+              <jre>
+                <minVersion>1.8.0</minVersion>
+                <!--                                <maxVersion>1..0</maxVersion>-->
+                <initialHeapSize>128</initialHeapSize>
+                <maxHeapSize>1024</maxHeapSize>
+              </jre>
+              <versionInfo>
+                <fileVersion>${build.app.version}</fileVersion>
+                <txtFileVersion>${build.app.version}</txtFileVersion>
+                <fileDescription>${description}</fileDescription>
+                <copyright>${user.name}</copyright>
+                <productVersion>${build.app.version}</productVersion>
+                <txtProductVersion>${build.app.version}</txtProductVersion>
+                <productName>${project.name}</productName>
+                <internalName>${project.name}</internalName>
+                <originalFilename>${project.name}.exe</originalFilename>
+              </versionInfo>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

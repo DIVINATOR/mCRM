@@ -1,0 +1,12 @@
+.root {
+    -fx-font-family: "Comic Sans MS";
+}
+
+.tab-pane {
+    -fx-background-color: #999999;
+    -fx-font-size: 11px;
+}
+
+.header-text {
+    -fx-font-family: "Comic Sans MS";
+}

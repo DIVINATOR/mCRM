@@ -1,0 +1,18 @@
+{
+  "properties": [
+    {
+      "name": "application.fx.resource.bundle.locale",
+      "type": "java.lang.String",
+      "description": "Description for application.fx.resource.bundle.locale."
+    },
+    {
+      "name": "application.fx.resource.bundle",
+      "type": "java.lang.String",
+      "description": "Description for application.fx.resource.bundle."
+    },
+    {
+      "name": "application.history.watcher",
+      "type": "java.lang.Boolean",
+      "description": "Включает наблюдение за файлом \"history.xml\". По умолчанию равен false."
+    }
+  ] }

@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -349,8 +350,8 @@ public class MainController implements Initializable {
         } else if (this.tid.getText().isEmpty()) {
             this.tid.setStyle(redBorder);
         } else {
-            LocalDateTime localDateTime = ((LocalDate)this.date.getValue()).atTime((Integer)this.hour.getValue(), (Integer)this.minute.getValue(), (Integer)this.second.getValue());
-            CallLogService callLogService = (CallLogService)this.applicationContext.getBean(CallLogService.class);
+            LocalDateTime localDateTime = (this.date.getValue()).atTime(this.hour.getValue(), this.minute.getValue(), this.second.getValue());
+            CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
             CallHistory lastCallHistory = null;
             if (callLogService.getCallHistory(localDateTime) != null) {
                 lastCallHistory = callLogService.getLastCallHistory();
@@ -361,10 +362,15 @@ public class MainController implements Initializable {
 
             lastCallHistory.setPhone(this.phone.getText());
             lastCallHistory.setDateTime(localDateTime);
-            CatalogSubtype subtypeByName = this.catalogService.getSubtypeByName((String)this.subtype.getValue());
-            CatalogDetails editDetails = (CatalogDetails)subtypeByName.getDetails().stream().filter((o) -> {
-                return ((String)this.details.getValue()).equals(o.getName());
+            CatalogSubtype subtypeByName = this.catalogService.getSubtypeByName(this.subtype.getValue());
+
+            CatalogDetails editDetails = subtypeByName.getDetails().stream().filter(new Predicate<CatalogDetails>() {
+                @Override
+                public boolean test(CatalogDetails o) {
+                    return details.getValue().equals(o.getName());
+                }
             }).findFirst().get();
+
             lastCallHistory.setSubtypeId(subtypeByName.getSubtypeId());
             lastCallHistory.setDetailsId(editDetails.getId());
             lastCallHistory.setTid(this.tid.getText());

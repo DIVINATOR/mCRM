@@ -10,3 +10,16 @@
 .header-text {
     -fx-font-family: "Comic Sans MS";
 }
+
+.log-area {
+    -fx-background-color: black;
+    -fx-font-family: "Consolas";
+    -fx-font-weight: bold;
+    -fx-text-fill: #999999;
+    -fx-font-size: 9;
+}
+
+.log-area .content {
+    -fx-background-color: black;
+    -fx-background-radius: 0;
+}

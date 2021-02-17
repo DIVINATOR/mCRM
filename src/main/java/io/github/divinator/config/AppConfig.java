@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:application.properties")
 public class AppConfig {
 
+    @Value("${logging.level.root:INFO}")
     private final String loglevel;
 
     public AppConfig(
@@ -18,6 +19,14 @@ public class AppConfig {
         this.loglevel = loglevel;
     }
 
+    /**
+     * Метод возвращает уровень логирования.
+     * <p>
+     * Log level: TRACE,DEBUG,INFO,WARN,ERROR,FATAL,OFF;
+     * </p>
+     *
+     * @return Уровень логирования
+     */
     public String getLoglevel() {
         return loglevel;
     }

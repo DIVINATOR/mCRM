@@ -69,27 +69,30 @@ public class CallLogService {
     }
 
     public CallHistory saveCallHistory(CallHistory callHistory) {
-        return (CallHistory)this.callHistoryRepository.save(callHistory);
+        return this.callHistoryRepository.save(callHistory);
     }
 
     private File getHistoryFile() throws CallLogServiceException {
         File history = Paths.get(System.getenv("APPDATA"), "Avaya", "Avaya one-X Communicator", "history.xml").toFile();
-        if (!history.exists()) {
-            throw new CallLogServiceException(String.format("Файл \"%s\" не найден", history));
-        } else {
+        if (history.exists()) {
             return history;
+        } else {
+            throw new CallLogServiceException(String.format("Файл \"%s\" не найден", history));
         }
     }
 
     private CallHistoryInformation readHistory(File historyFile) throws CallLogServiceException {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(new Class[]{CallHistoryInformation.class});
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            return (CallHistoryInformation)unmarshaller.unmarshal(historyFile);
-        } catch (JAXBException var4) {
-            this.LOG.error(var4.getLocalizedMessage());
-            throw new CallLogServiceException("История звонков не прочитана.");
+        if (historyFile.canRead()) {
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(CallHistoryInformation.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                return (CallHistoryInformation)unmarshaller.unmarshal(historyFile);
+            } catch (JAXBException var4) {
+                this.LOG.error(var4.getLocalizedMessage());
+                throw new CallLogServiceException("История звонков не прочитана.");
+            }
         }
+        throw new CallLogServiceException("История звонков не прочитана.");
     }
 
     @Scheduled(
@@ -100,7 +103,7 @@ public class CallLogService {
             try {
                 CallHistoryInformation callHistoryInformationNew = this.readHistory(this.getHistoryFile());
                 if (!callHistoryInformationNew.getNextSessionId().equals(this.historyInformation.getNextSessionId())) {
-                    CallHistoryData call = (CallHistoryData)callHistoryInformationNew.getCallHistoryData().peek();
+                    CallHistoryData call = callHistoryInformationNew.getCallHistoryData().peek();
                     if (call.isIncoming()) {
                         LocalDateTime localDateTime = Instant.ofEpochSecond(Long.parseLong(call.getStartTime())).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime();
                         this.createCallHistory(call.getFirstContact().getPhoneNumber(), localDateTime, false);
@@ -108,8 +111,8 @@ public class CallLogService {
                 }
 
                 this.historyInformation = callHistoryInformationNew;
-            } catch (CallLogServiceException var4) {
-                var4.printStackTrace();
+            } catch (CallLogServiceException e) {
+                e.printStackTrace();
             }
         }
 

@@ -25,7 +25,25 @@ public class CatalogService {
 
     public void initCatalog() {
         if (this.catalogRepository.count() == 0L) {
-            this.catalogRepository.saveAll(Arrays.asList(CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.0"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.1"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.2"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.3"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.4"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.5"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.6"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.7"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.8"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.9"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.10"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.11"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.12"), CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.13")));
+            this.catalogRepository.saveAll(
+                    Arrays.asList(
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.0"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.1"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.2"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.3"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.4"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.5"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.6"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.7"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.8"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.9"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.10"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.11"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.12"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.13"),
+                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.14")
+                    )
+            );
         }
 
     }

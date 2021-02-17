@@ -1,10 +1,12 @@
 package io.github.divinator.controller;
 
+import io.github.divinator.config.AppConfig;
 import io.github.divinator.datasource.entity.CallHistory;
 import io.github.divinator.datasource.entity.CallHistoryPojo;
 import io.github.divinator.datasource.entity.CatalogDetails;
 import io.github.divinator.datasource.entity.CatalogSubtype;
 import io.github.divinator.javafx.FXMLController;
+import io.github.divinator.javafx.view.FxLoggerArea;
 import io.github.divinator.service.CallLogService;
 import io.github.divinator.service.CatalogService;
 import io.github.divinator.tray.AppTrayMouseListener;
@@ -12,6 +14,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -24,6 +27,7 @@ import javafx.stage.DirectoryChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.w3c.dom.ls.LSOutput;
 
 import java.awt.MenuItem;
 import java.awt.*;
@@ -32,11 +36,10 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,15 +50,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@FXMLController(
-        value = "mainController",
-        view = "main.fxml"
-)
+@FXMLController(value = "mainController", view = "main.fxml")
 public class MainController implements Initializable {
+
     @FXML
     private Text username;
     @FXML
     private AnchorPane rootPane;
+    @FXML
+    private TextArea logArea;
     @FXML
     private TitledPane history;
     @FXML
@@ -84,98 +87,112 @@ public class MainController implements Initializable {
     DatePicker callhistorydate;
     @FXML
     Circle indicator;
+
     private final Logger LOG = LoggerFactory.getLogger(MainController.class);
+    private final AppConfig config;
     private final ApplicationContext applicationContext;
     private final CatalogService catalogService;
     private long countHistory;
     private ResourceBundle resources;
 
-    public MainController(ApplicationContext applicationContext, CatalogService catalogService) {
+    public MainController(AppConfig config, ApplicationContext applicationContext, CatalogService catalogService) {
+        this.config = config;
         this.applicationContext = applicationContext;
         this.catalogService = catalogService;
     }
 
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
+        this.initializeLogger();
         this.initializeUsername();
         this.initializeDate();
         this.initializeTime();
         this.initializeSubtype();
-        this.initializeDetails();
-        this.initializeTID();
-        this.initializeTitle();
         this.initializeCountCallHistory();
         this.initializeCallHistoryDate();
         this.initializeCallHistoryTable();
         this.initializeScheduler();
     }
 
-    private void initializeCountCallHistory() {
-        this.countHistory = ((CallLogService)this.applicationContext.getBean(CallLogService.class)).getCountCallHistory();
+    /**
+     * <h2>Метод проводит инициализацию вывода логов приложения.</h2>
+     */
+    private void initializeLogger() {
+        String loglevel = applicationContext.getBean(AppConfig.class).getLoglevel();
+
+        if (loglevel.length() > 0 && !loglevel.equals("OFF")) {
+            FxLoggerArea.in(this.logArea);
+        }
     }
 
+    /**
+     * Метод инициализирует количество записей в журнале.
+     */
+    private void initializeCountCallHistory() {
+        this.countHistory = this.applicationContext.getBean(CallLogService.class).getCountCallHistory();
+    }
+
+    /**
+     * Метод инициализирует текущую дату.
+     */
     private void initializeDate() {
         this.date.setValue(LocalDate.now());
     }
 
+    /**
+     * Метод инициализирует значения для выбора времени.
+     * <p>Часы и минуты.
+     */
     private void initializeTime() {
-        List<Integer> hourCollection = (List)IntStream.range(0, 24).boxed().collect(Collectors.toList());
-        List<Integer> minuteCollection = (List)IntStream.range(0, 60).boxed().collect(Collectors.toList());
+        List<Integer> hourCollection = IntStream.range(0, 24).boxed().collect(Collectors.toList());
+        List<Integer> minuteCollection = IntStream.range(0, 60).boxed().collect(Collectors.toList());
         this.hour.setItems(FXCollections.observableArrayList(hourCollection));
         this.minute.setItems(FXCollections.observableArrayList(minuteCollection));
         this.updateTime();
     }
 
+    /**
+     * Метод инициализирует имя пользователя из ОС.
+     */
     private void initializeUsername() {
         this.username.setText(System.getProperty("user.name"));
     }
 
+    /**
+     * Метод инициализирует список тематик для Combobox "Подтип".
+     */
     private void initializeSubtype() {
-        this.subtype.setPromptText(this.resources.getString("gui.tab.0.label.subtype"));
         List<String> collect = ((List<CatalogSubtype>) this.catalogService.getSubtypes())
                 .stream()
                 .sorted()
-                .map(new Function<CatalogSubtype, String>() {
-                    @Override
-                    public String apply(CatalogSubtype catalogSubtype) {
-                        return catalogSubtype.getName();
-                    }
-                }).collect(Collectors.toList());
+                .map(CatalogSubtype::getName)
+                .collect(Collectors.toList());
         this.subtype.setItems(FXCollections.observableArrayList(collect));
     }
 
-    private void initializeDetails() {
-        this.details.setPromptText(this.resources.getString("gui.tab.0.label.details"));
-    }
-
-    private void initializeTID() {
-        this.tid.setPromptText(this.resources.getString("gui.tab.0.label.tid"));
-    }
-
-    private void initializeTitle() {
-        this.title.setPromptText(this.resources.getString("gui.tab.0.label.title"));
-    }
-
     private void initializeScheduler() {
-        final CallLogService callLogService = (CallLogService)this.applicationContext.getBean(CallLogService.class);
-        Runnable runnable = new Runnable() {
-            public void run() {
-                if (MainController.this.countHistory < callLogService.getCountCallHistory()) {
-                    CallHistory lastCallHistory = callLogService.getLastCallHistory();
-                    MainController.this.LOG.info(String.format("Входящий звонок: %s", lastCallHistory.getPhone()));
-                    if (!lastCallHistory.isManually()) {
-                        MainController.this.phone.setText(lastCallHistory.getPhone());
-                        MainController.this.date.setValue(lastCallHistory.getDateTime().toLocalDate());
-                        MainController.this.hour.setValue(lastCallHistory.getDateTime().getHour());
-                        MainController.this.minute.setValue(lastCallHistory.getDateTime().getMinute());
-                        MainController.this.second.setValue(lastCallHistory.getDateTime().getSecond());
-                    }
+        final CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
 
-                    MainController.this.updateCountHistory();
+        Runnable runnable = () -> {
+            if (this.countHistory < callLogService.getCountCallHistory()) {
+
+                CallHistory lastCallHistory = callLogService.getLastCallHistory();
+
+                this.LOG.info(String.format("Входящий звонок: %s", lastCallHistory.getPhone()));
+
+                if (!lastCallHistory.isManually()) {
+                    this.phone.setText(lastCallHistory.getPhone());
+                    this.date.setValue(lastCallHistory.getDateTime().toLocalDate());
+                    this.hour.setValue(lastCallHistory.getDateTime().getHour());
+                    this.minute.setValue(lastCallHistory.getDateTime().getMinute());
+                    this.second.setValue(lastCallHistory.getDateTime().getSecond());
                 }
 
+                this.updateCountHistory();
             }
+
         };
+
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(runnable, 0L, 1L, TimeUnit.SECONDS);
     }
@@ -185,11 +202,11 @@ public class MainController implements Initializable {
     }
 
     private void initializeCallHistoryTable() {
-        TableColumn<CallHistoryPojo, String> dateCol = new TableColumn();
+        TableColumn<CallHistoryPojo, String> dateCol = new TableColumn<>();
         dateCol.setText(this.resources.getString("gui.tab.0.label.date"));
         dateCol.setCellValueFactory(new PropertyValueFactory("date"));
         TableColumn<CallHistoryPojo, String> phoneCol = new TableColumn();
-        phoneCol.setText(this.resources.getString("gui.form.phone"));
+        phoneCol.setText(this.resources.getString("gui.tab.0.label.phone"));
         phoneCol.setCellValueFactory(new PropertyValueFactory("phone"));
         TableColumn<CallHistoryPojo, String> subtypeCol = new TableColumn();
         subtypeCol.setText(this.resources.getString("gui.tab.0.label.subtype"));
@@ -208,25 +225,21 @@ public class MainController implements Initializable {
     }
 
     private void loadCallHistoryTable() {
-        CallLogService callLogService = (CallLogService)this.applicationContext.getBean(CallLogService.class);
-        LocalDateTime localDateTimeFrom = ((LocalDate)this.callhistorydate.getValue()).atStartOfDay();
+        CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
+        LocalDateTime localDateTimeFrom = (this.callhistorydate.getValue()).atStartOfDay();
         LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 
         List<CallHistoryPojo> collect = ((List<CallHistory>) callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo))
                 .stream()
-                .map(new Function<CallHistory, CallHistoryPojo>() {
-                    @Override
-                    public CallHistoryPojo apply(CallHistory callHistory) {
-                        return new CallHistoryPojo(callHistory, catalogService);
-                    }
-                }).collect(Collectors.toList());
+                .map(callHistory -> new CallHistoryPojo(callHistory, catalogService))
+                .collect(Collectors.toList());
 
         this.callhistorytable.getItems().setAll(FXCollections.observableArrayList(collect));
         this.countcalls.setText(String.valueOf(this.callhistorytable.getItems().size()));
     }
 
     private void updateCountHistory() {
-        this.countHistory = ((CallLogService)this.applicationContext.getBean(CallLogService.class)).getCountCallHistory();
+        this.countHistory = (this.applicationContext.getBean(CallLogService.class)).getCountCallHistory();
     }
 
     private void updatePhone() {
@@ -282,9 +295,16 @@ public class MainController implements Initializable {
         this.updateTitle();
     }
 
+    /**
+     * Метод указывает на событие при завершении выбора поля "Подтип".
+     */
     @FXML
-    public void onShownSubtype() {
+    public void onHidingSubtype() {
         this.updateDetails();
+        String noneBorder = "-fx-border: none;";
+        if (this.subtype.getValue() != null) {
+            this.subtype.setStyle(noneBorder);
+        }
     }
 
     @FXML
@@ -294,20 +314,6 @@ public class MainController implements Initializable {
 
     @FXML
     public void onHidingSelectDate() {
-    }
-
-    @FXML
-    public void onShowingDetails() {
-        String noneBorder = "-fx-border: none;";
-        if (this.subtype.getValue() != null) {
-            CatalogSubtype byName = this.catalogService.getSubtypeByName((String)this.subtype.getValue());
-            if (byName != null) {
-                List<String> collect = (List)byName.getDetails().stream().sorted().map(CatalogDetails::getName).collect(Collectors.toList());
-                this.details.setItems(FXCollections.observableArrayList(collect));
-            }
-
-            this.details.setStyle(noneBorder);
-        }
 
     }
 
@@ -317,14 +323,24 @@ public class MainController implements Initializable {
         if (!this.phone.getText().isEmpty()) {
             this.phone.setStyle(noneBorder);
         }
-
     }
 
     @FXML
-    private void onShowingSubtypes() {
+    public void onShowingDetails() {
         String noneBorder = "-fx-border: none;";
+
         if (this.subtype.getValue() != null) {
-            this.subtype.setStyle(noneBorder);
+            CatalogSubtype byName = this.catalogService.getSubtypeByName((String) this.subtype.getValue());
+            if (byName != null) {
+                List<String> collect = byName.getDetails().stream()
+                        .sorted()
+                        .map(CatalogDetails::getName)
+                        .collect(Collectors.toList());
+
+                this.details.setItems(FXCollections.observableArrayList(collect));
+            }
+
+            this.details.setStyle(noneBorder);
         }
 
     }
@@ -338,20 +354,29 @@ public class MainController implements Initializable {
 
     }
 
+    /**
+     * Метод указывает на событие при нажатии на кнопку "Сохранить"
+     */
     @FXML
     public void onActionSave() {
         String redBorder = "-fx-border-color: red;";
         if (this.phone.getText().isEmpty()) {
             this.phone.setStyle(redBorder);
-        } else if (this.subtype.getValue() == null) {
+        } else if (this.subtype.getValue() == null || this.subtype.getValue().isEmpty()) {
             this.subtype.setStyle(redBorder);
-        } else if (this.details.getValue() == null) {
+        } else if (this.details.getValue() == null || this.details.getValue().isEmpty()) {
             this.details.setStyle(redBorder);
         } else if (this.tid.getText().isEmpty()) {
             this.tid.setStyle(redBorder);
         } else {
-            LocalDateTime localDateTime = (this.date.getValue()).atTime(this.hour.getValue(), this.minute.getValue(), this.second.getValue());
+            LocalDateTime localDateTime = (this.date.getValue()).atTime(
+                    Integer.parseInt(String.valueOf(this.hour.getValue())),
+                    Integer.parseInt(String.valueOf(this.minute.getValue())),
+                    Integer.parseInt(String.valueOf(this.second.getValue()))
+            );
+
             CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
+
             CallHistory lastCallHistory = null;
             if (callLogService.getCallHistory(localDateTime) != null) {
                 lastCallHistory = callLogService.getLastCallHistory();
@@ -362,14 +387,13 @@ public class MainController implements Initializable {
 
             lastCallHistory.setPhone(this.phone.getText());
             lastCallHistory.setDateTime(localDateTime);
+
             CatalogSubtype subtypeByName = this.catalogService.getSubtypeByName(this.subtype.getValue());
 
-            CatalogDetails editDetails = subtypeByName.getDetails().stream().filter(new Predicate<CatalogDetails>() {
-                @Override
-                public boolean test(CatalogDetails o) {
-                    return details.getValue().equals(o.getName());
-                }
-            }).findFirst().get();
+            CatalogDetails editDetails = subtypeByName.getDetails()
+                    .stream()
+                    .filter(o -> details.getValue().equals(o.getName()))
+                    .findFirst().get();
 
             lastCallHistory.setSubtypeId(subtypeByName.getSubtypeId());
             lastCallHistory.setDetailsId(editDetails.getId());
@@ -388,30 +412,27 @@ public class MainController implements Initializable {
     private void onExportHistory() {
         File export = this.directoryChooser("Export");
         if (export != null) {
-            CallLogService callLogService = (CallLogService)this.applicationContext.getBean(CallLogService.class);
-            LocalDateTime localDateTimeFrom = ((LocalDate)this.callhistorydate.getValue()).atStartOfDay();
+            CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
+            LocalDateTime localDateTimeFrom = this.callhistorydate.getValue().atStartOfDay();
             LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 
             List<String[]> collect = ((List<CallHistory>) callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo))
                     .stream()
-                    .map(new Function<CallHistory, String[]>() {
-                        @Override
-                        public String[] apply(CallHistory callHistory) {
-                            LocalDateTime dateTime = callHistory.getDateTime();
-                            String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                            String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
-                            String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
-                            String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).get()).getName();
-                            String tid = callHistory.getTid();
-                            String title = String.format("Телефон:%s", callHistory.getPhone());
-                            String error = "";
+                    .map(callHistory -> {
+                        LocalDateTime dateTime = callHistory.getDateTime();
+                        String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                        String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
+                        String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
+                        String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).get()).getName();
+                        String tid = callHistory.getTid();
+                        String title = String.format("Телефон:%s", callHistory.getPhone());
+                        String error = "";
 
-                            if (callHistory.getSubtypeId() == 13L) {
-                                error = String.format("Сбой: %s", details);
-                            }
-
-                            return new String[]{date, time, subtype, details, tid, title, error};
+                        if (callHistory.getSubtypeId() == 13L) {
+                            error = String.format("Сбой: %s", details);
                         }
+
+                        return new String[]{date, time, subtype, details, tid, title, error};
                     }).collect(Collectors.toList());
 
             collect.add(0, new String[]{"Дата", "время", "Подтип", "Детали", "TID", "Описание", "Фиксирование сбоя Avaya one-x"});
@@ -446,18 +467,8 @@ public class MainController implements Initializable {
 
     }
 
-    public String escapeSpecialCharacters(String data) {
-        String escapedData = data.replaceAll("\\R", " ");
-        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
-            data = data.replace("\"", "\"\"");
-            escapedData = "\"" + data + "\"";
-        }
-
-        return escapedData;
-    }
-
     public String convertToCSV(String[] data) {
-        return (String)Stream.of(data).collect(Collectors.joining("\t;"));
+        return Stream.of(data).collect(Collectors.joining("\t;"));
     }
 
     private File directoryChooser(String title) {

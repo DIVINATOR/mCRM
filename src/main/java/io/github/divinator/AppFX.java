@@ -16,14 +16,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 public abstract class AppFX extends Application {
     private final Logger LOG = LoggerFactory.getLogger(AppFX.class);
     private Parameters parameters;
     private ConfigurableApplicationContext context;
-    private Parent rootNode;
+    //private Parent rootNode;
     @Autowired
     private FXMLViewService fxmlViewService;
+    @Autowired
+    ResourceBundle resourceBundle;
 
     public AppFX() {
     }
@@ -37,13 +40,14 @@ public abstract class AppFX extends Application {
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene((Parent)this.fxmlViewService.getView("main.fxml"));
         scene.getStylesheets().add("css/app.css");
+        primaryStage.setTitle(String.format("%s %s", resourceBundle.getString("app.name"), resourceBundle.getString("app.version")));
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800.0D);
         primaryStage.setMaxWidth(800.0D);
         primaryStage.setMinHeight(600.0D);
         primaryStage.setHeight(600.0D);
         primaryStage.getIcons().add(new Image("img/ico_64_64.png"));
-        primaryStage.initStyle(StageStyle.UNIFIED);
+        //primaryStage.initStyle(StageStyle.UNIFIED);
         primaryStage.show();
         this.LOG.info("Приложение запущено");
     }

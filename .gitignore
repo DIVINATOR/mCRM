@@ -40,3 +40,4 @@ dbase
 *.xlsx
 *.txt
 *.txt/
+/src/test/resources/modena.css

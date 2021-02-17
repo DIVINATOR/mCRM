@@ -41,7 +41,6 @@ public class CallLogService {
         } catch (CallLogServiceException var4) {
             this.LOG.error(String.format("Журнал истории звонков не найден. %s", this.historyInformation), var4.getLocalizedMessage());
         }
-
     }
 
     public void createCallHistory(String phone, LocalDateTime dateTime, boolean manually) {
@@ -112,7 +111,7 @@ public class CallLogService {
 
                 this.historyInformation = callHistoryInformationNew;
             } catch (CallLogServiceException e) {
-                e.printStackTrace();
+                this.LOG.error("Журнал истории звонков не найден.", e.getLocalizedMessage());
             }
         }
 

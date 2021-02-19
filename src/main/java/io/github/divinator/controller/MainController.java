@@ -7,6 +7,7 @@ import io.github.divinator.datasource.entity.CatalogDetails;
 import io.github.divinator.datasource.entity.CatalogSubtype;
 import io.github.divinator.javafx.FXMLController;
 import io.github.divinator.javafx.view.FxLoggerArea;
+import io.github.divinator.service.CSVService;
 import io.github.divinator.service.CallLogService;
 import io.github.divinator.service.CatalogService;
 import io.github.divinator.tray.AppTrayMouseListener;
@@ -27,28 +28,21 @@ import javafx.stage.DirectoryChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.w3c.dom.ls.LSOutput;
 
 import java.awt.MenuItem;
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @FXMLController(value = "mainController", view = "main.fxml")
 public class MainController implements Initializable {
@@ -92,11 +86,13 @@ public class MainController implements Initializable {
     private final AppConfig config;
     private final ApplicationContext applicationContext;
     private final CatalogService catalogService;
+    private final CSVService csvService;
     private long countHistory;
     private ResourceBundle resources;
 
-    public MainController(AppConfig config, ApplicationContext applicationContext, CatalogService catalogService) {
+    public MainController(AppConfig config, ApplicationContext applicationContext, CatalogService catalogService, CSVService csvService) {
         this.config = config;
+        this.csvService = csvService;
         this.applicationContext = applicationContext;
         this.catalogService = catalogService;
     }
@@ -284,6 +280,9 @@ public class MainController implements Initializable {
     private void setOffStatus() {
     }
 
+    /**
+     * Метод указывает на событие при нажатии на кнопку "Обновить".
+     */
     @FXML
     public void onMouseClickedUpdate() {
         this.updatePhone();
@@ -408,72 +407,32 @@ public class MainController implements Initializable {
 
     }
 
+    /**
+     * Метод указывает на событие при нажатии кнопки "Выгрузить".
+     */
     @FXML
     private void onExportHistory() {
-        File export = this.directoryChooser("Export");
+        File export = this.directoryChooser(resources.getString("gui.tab.1.button.export.dialog.title"));
         if (export != null) {
             CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
             LocalDateTime localDateTimeFrom = this.callhistorydate.getValue().atStartOfDay();
             LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 
-            List<String[]> collect = ((List<CallHistory>) callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo))
-                    .stream()
-                    .map(callHistory -> {
-                        LocalDateTime dateTime = callHistory.getDateTime();
-                        String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                        String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
-                        String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
-                        String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).get()).getName();
-                        String tid = callHistory.getTid();
-                        String title = String.format("Телефон:%s", callHistory.getPhone());
-                        String error = "";
-
-                        if (callHistory.getSubtypeId() == 13L) {
-                            error = String.format("Сбой: %s", details);
-                        }
-
-                        return new String[]{date, time, subtype, details, tid, title, error};
-                    }).collect(Collectors.toList());
-
-            collect.add(0, new String[]{"Дата", "время", "Подтип", "Детали", "TID", "Описание", "Фиксирование сбоя Avaya one-x"});
-
-            try {
-                PrintWriter pw = new PrintWriter(export.getPath().concat("\\export.csv"), "Cp1251");
-                Throwable var7 = null;
-
-                try {
-                    collect.stream().map(this::convertToCSV).forEach(pw::println);
-                } catch (Throwable var17) {
-                    var7 = var17;
-                    throw var17;
-                } finally {
-                    if (pw != null) {
-                        if (var7 != null) {
-                            try {
-                                pw.close();
-                            } catch (Throwable var16) {
-                                var7.addSuppressed(var16);
-                            }
-                        } else {
-                            pw.close();
-                        }
-                    }
-
-                }
-            } catch (UnsupportedEncodingException | FileNotFoundException var19) {
-                var19.printStackTrace();
-            }
+            Iterable<CallHistory> callHistoryBetween = callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo);
+            File file = new File(export.getPath().concat("\\export.csv"));
+            csvService.write(file, callHistoryBetween);
         }
-
     }
 
-    public String convertToCSV(String[] data) {
-        return Stream.of(data).collect(Collectors.joining("\t;"));
-    }
-
+    /**
+     * Метод выбора директории.
+     *
+     * @param title Название заголовка.
+     * @return Директория
+     */
     private File directoryChooser(String title) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Сохранить журнал");
+        directoryChooser.setTitle(title);
         return directoryChooser.showDialog(this.rootPane.getScene().getWindow());
     }
 

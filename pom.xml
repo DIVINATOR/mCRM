@@ -18,8 +18,8 @@
     <java.version>1.8</java.version>
     <build.lib>${project.build.directory}/lib</build.lib>
     <build.bin>${project.build.directory}/bin</build.bin>
-    <build.name.app>${name}</build.name.app>
-    <build.app.version>0.0.3.0</build.app.version>
+    <build.name.app>${project.name}</build.name.app>
+    <build.app.version>0.0.2.0</build.app.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <start-class>io.github.divinator.App</start-class>
@@ -70,46 +70,60 @@
       <optional>true</optional>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
+<!--    <dependency>-->
+<!--      <groupId>com.opencsv</groupId>-->
+<!--      <artifactId>opencsv</artifactId>-->
+<!--      <version>5.3</version>-->
+<!--    </dependency>-->
+
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.8</version>
+    </dependency>
+
   </dependencies>
 
   <build>
     <plugins>
       <!--    Сборка через Spring-->
-<!--      <plugin>-->
-<!--        <groupId>org.springframework.boot</groupId>-->
-<!--        <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--        <configuration>-->
-<!--          <excludes>-->
-<!--            <exclude>-->
-<!--              <groupId>org.springframework.boot</groupId>-->
-<!--              <artifactId>spring-boot-configuration-processor</artifactId>-->
-<!--            </exclude>-->
-<!--          </excludes>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <goals>-->
-<!--              <goal>repackage</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-configuration-processor</artifactId>
+            </exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <!--    Сборка через Maven-->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-          <!--  <addClasspath>true</addClasspath>-->
-          <!--  <classpathPrefix>lib/</classpathPrefix>-->
-              <mainClass>${start-class}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-jar-plugin</artifactId>-->
+<!--        <version>3.2.0</version>-->
+<!--        <configuration>-->
+<!--          <archive>-->
+<!--            <manifest>-->
+<!--          &lt;!&ndash;  <addClasspath>true</addClasspath>&ndash;&gt;-->
+<!--          &lt;!&ndash;  <classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+<!--              <mainClass>${start-class}</mainClass>-->
+<!--            </manifest>-->
+<!--          </archive>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
 
       <!--            <plugin>-->
       <!--                <groupId>org.apache.maven.plugins</groupId>-->
@@ -132,47 +146,47 @@
       <!--                </executions>-->
       <!--            </plugin>-->
 
-      <plugin>
-        <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
-        <artifactId>launch4j-plugin</artifactId>
-        <version>1.5.0.0</version>
-        <executions>
-          <execution>
-            <id>l4j-gui</id>
-            <phase>package</phase>
-            <goals>
-              <goal>launch4j</goal>
-            </goals>
-            <configuration>
-              <headerType>gui</headerType>
-              <outfile>target/${project.name}.exe</outfile>
-              <jar>target/ksenia-0.0.3-alpha.jar</jar> <!-- 'shaded' is the value set on shadedClassifierName above -->
-              <errTitle>App Err</errTitle>
-              <classPath>
-                <mainClass>${start-class}</mainClass>
-              </classPath>
-              <icon>src/main/resources/icon.ico</icon>
-              <jre>
-                <minVersion>1.8.0</minVersion>
-                <!--                                <maxVersion>1..0</maxVersion>-->
-                <initialHeapSize>128</initialHeapSize>
-                <maxHeapSize>1024</maxHeapSize>
-              </jre>
-              <versionInfo>
-                <fileVersion>${build.app.version}</fileVersion>
-                <txtFileVersion>${build.app.version}</txtFileVersion>
-                <fileDescription>${description}</fileDescription>
-                <copyright>${user.name}</copyright>
-                <productVersion>${build.app.version}</productVersion>
-                <txtProductVersion>${build.app.version}</txtProductVersion>
-                <productName>${project.name}</productName>
-                <internalName>${project.name}</internalName>
-                <originalFilename>${project.name}.exe</originalFilename>
-              </versionInfo>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.bluestemsoftware.open.maven.plugin</groupId>-->
+<!--        <artifactId>launch4j-plugin</artifactId>-->
+<!--        <version>1.5.0.0</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>l4j-gui</id>-->
+<!--            <phase>package</phase>-->
+<!--            <goals>-->
+<!--              <goal>launch4j</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <headerType>gui</headerType>-->
+<!--              <outfile>target/${project.name}.exe</outfile>-->
+<!--              <jar>target/ksenia-0.0.3-alpha.jar</jar> &lt;!&ndash; 'shaded' is the value set on shadedClassifierName above &ndash;&gt;-->
+<!--              <errTitle>App Err</errTitle>-->
+<!--              <classPath>-->
+<!--                <mainClass>${start-class}</mainClass>-->
+<!--              </classPath>-->
+<!--              <icon>src/main/resources/icon.ico</icon>-->
+<!--              <jre>-->
+<!--                <minVersion>1.8.0</minVersion>-->
+<!--                &lt;!&ndash;                                <maxVersion>1..0</maxVersion>&ndash;&gt;-->
+<!--                <initialHeapSize>128</initialHeapSize>-->
+<!--                <maxHeapSize>1024</maxHeapSize>-->
+<!--              </jre>-->
+<!--              <versionInfo>-->
+<!--                <fileVersion>${build.app.version}</fileVersion>-->
+<!--                <txtFileVersion>${build.app.version}</txtFileVersion>-->
+<!--                <fileDescription>${description}</fileDescription>-->
+<!--                <copyright>${user.name}</copyright>-->
+<!--                <productVersion>${build.app.version}</productVersion>-->
+<!--                <txtProductVersion>${build.app.version}</txtProductVersion>-->
+<!--                <productName>${project.name}</productName>-->
+<!--                <internalName>${project.name}</internalName>-->
+<!--                <originalFilename>${project.name}.exe</originalFilename>-->
+<!--              </versionInfo>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
     </plugins>
   </build>
 </project>

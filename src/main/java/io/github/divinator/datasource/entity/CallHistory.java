@@ -39,6 +39,14 @@ public class CallHistory {
         this.manually = manually;
     }
 
+    public CallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId) {
+        this.phone = phone;
+        this.createDateTime = LocalDateTime.now();
+        this.dateTime = dateTime;
+        this.manually = manually;
+        this.subtypeId = subtypeId;
+    }
+
     public CallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId, long detailsId, String tid, String title) {
         this.phone = phone;
         this.createDateTime = LocalDateTime.now();

@@ -54,6 +54,6 @@ public class Contact {
      * @return В случае если вызывающий абонент настоящий настоящий возвращается true, в противном случае false.
      */
     public boolean isUser() {
-        return !phoneNumber.contains("*");
+        return !phoneNumber.contains("*") && !phoneNumber.contains("#");
     }
 }

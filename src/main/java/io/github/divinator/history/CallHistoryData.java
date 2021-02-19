@@ -112,4 +112,12 @@ public class CallHistoryData {
     public boolean isMissed() {
         return isMissed;
     }
+
+    /**
+     * Метод указывает является ли звонок командой.
+     * @return В случае команды возвращается true, в противном случае возвращается false.
+     */
+    public boolean isCommand() {
+        return !getContacts().get(0).isUser();
+    }
 }

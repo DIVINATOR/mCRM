@@ -182,6 +182,10 @@ public class MainController implements Initializable {
                     this.hour.setValue(lastCallHistory.getDateTime().getHour());
                     this.minute.setValue(lastCallHistory.getDateTime().getMinute());
                     this.second.setValue(lastCallHistory.getDateTime().getSecond());
+
+                    if (lastCallHistory.getSubtypeId() != 0) {
+                        this.subtype.getSelectionModel().select(catalogService.getSubtypeById(lastCallHistory.getSubtypeId()).get().getName());
+                    }
                 }
 
                 this.updateCountHistory();

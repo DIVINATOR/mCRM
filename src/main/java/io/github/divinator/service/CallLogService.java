@@ -47,6 +47,10 @@ public class CallLogService {
         this.callHistoryRepository.save(new CallHistory(phone, dateTime, manually));
     }
 
+    public void createCallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId) {
+        this.callHistoryRepository.save(new CallHistory(phone, dateTime, manually, subtypeId));
+    }
+
     public long getCountCallHistory() {
         return this.callHistoryRepository.count();
     }
@@ -102,10 +106,18 @@ public class CallLogService {
             try {
                 CallHistoryInformation callHistoryInformationNew = this.readHistory(this.getHistoryFile());
                 if (!callHistoryInformationNew.getNextSessionId().equals(this.historyInformation.getNextSessionId())) {
-                    CallHistoryData call = callHistoryInformationNew.getCallHistoryData().peek();
-                    if (call.isIncoming()) {
-                        LocalDateTime localDateTime = Instant.ofEpochSecond(Long.parseLong(call.getStartTime())).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime();
-                        this.createCallHistory(call.getFirstContact().getPhoneNumber(), localDateTime, false);
+
+                    CallHistoryData last = callHistoryInformationNew.getLast();
+
+                    if (!last.isCommand()) {
+                        LocalDateTime localDateTime = Instant.ofEpochSecond(Long.parseLong(last.getStartTime())).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime();
+
+                        if (!last.isIncoming()) {
+                            last = callHistoryInformationNew.getLastIncoming();
+                            this.createCallHistory(last.getFirstContact().getPhoneNumber(), localDateTime, false, 15L);
+                        } else {
+                            this.createCallHistory(last.getFirstContact().getPhoneNumber(), localDateTime, false);
+                        }
                     }
                 }
 

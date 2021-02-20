@@ -99,7 +99,7 @@ public class MainController implements Initializable {
 
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        this.initializeLogger();
+        //this.initializeLogger();
         this.initializeUsername();
         this.initializeDate();
         this.initializeTime();
@@ -358,20 +358,38 @@ public class MainController implements Initializable {
     }
 
     /**
-     * Метод указывает на событие при нажатии на кнопку "Сохранить"
+     * Метод выполняет валидацию заполнения полей ввода.
+     * @return true в случае если все заполнено корректно, в противном случае false;
      */
-    @FXML
-    public void onActionSave() {
+    private boolean validationInputFields() {
         String redBorder = "-fx-border-color: red;";
+
         if (this.phone.getText().isEmpty()) {
             this.phone.setStyle(redBorder);
         } else if (this.subtype.getValue() == null || this.subtype.getValue().isEmpty()) {
             this.subtype.setStyle(redBorder);
-        } else if (this.details.getValue() == null || this.details.getValue().isEmpty()) {
+        } else if (catalogService.getSubtypeByName(this.subtype.getValue()).getDetails().size() > 0 && (this.details.getValue() == null || this.details.getValue().isEmpty())) {
+            System.out.println(catalogService.getSubtypeByName(this.subtype.getValue()).getDetails().size());
             this.details.setStyle(redBorder);
         } else if (this.tid.getText().isEmpty()) {
             this.tid.setStyle(redBorder);
         } else {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Метод указывает на событие при нажатии на кнопку "Сохранить"
+     */
+    @FXML
+    public void onActionSave() {
+
+        System.out.println(validationInputFields());
+
+        if (validationInputFields()) {
+
             LocalDateTime localDateTime = (this.date.getValue()).atTime(
                     Integer.parseInt(String.valueOf(this.hour.getValue())),
                     Integer.parseInt(String.valueOf(this.minute.getValue())),
@@ -396,10 +414,16 @@ public class MainController implements Initializable {
             CatalogDetails editDetails = subtypeByName.getDetails()
                     .stream()
                     .filter(o -> details.getValue().equals(o.getName()))
-                    .findFirst().get();
+                    .findFirst().orElse(new CatalogDetails(null));
 
             lastCallHistory.setSubtypeId(subtypeByName.getSubtypeId());
-            lastCallHistory.setDetailsId(editDetails.getId());
+
+            if (editDetails.getName() == null) {
+                lastCallHistory.setDetailsId(0);
+            } else {
+                lastCallHistory.setDetailsId(editDetails.getId());
+            }
+
             lastCallHistory.setTid(this.tid.getText());
             lastCallHistory.setTitle(this.title.getText());
             CallHistory callHistory = callLogService.saveCallHistory(lastCallHistory);
@@ -408,7 +432,6 @@ public class MainController implements Initializable {
                 this.onMouseClickedUpdate();
             }
         }
-
     }
 
     /**
@@ -419,6 +442,7 @@ public class MainController implements Initializable {
         File export = this.directoryChooser(resources.getString("gui.tab.1.button.export.dialog.title"));
         if (export != null) {
             CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
+
             LocalDateTime localDateTimeFrom = this.callhistorydate.getValue().atStartOfDay();
             LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 

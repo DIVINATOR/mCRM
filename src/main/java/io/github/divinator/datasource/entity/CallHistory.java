@@ -1,11 +1,13 @@
 package io.github.divinator.datasource.entity;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Table("t_call_history")
 public class CallHistory {
@@ -28,55 +30,43 @@ public class CallHistory {
     @Column("manually")
     private boolean manually;
 
+    @Transient
+    private final ZoneId zone = ZoneId.of("Europe/Moscow");
+
     public CallHistory() {
-        this.createDateTime = LocalDateTime.now();
+        this(null, LocalDateTime.now(), false);
     }
 
     public CallHistory(String phone, LocalDateTime dateTime, boolean manually) {
-        this.phone = phone;
-        this.createDateTime = LocalDateTime.now();
-        this.dateTime = dateTime;
-        this.manually = manually;
+        this(phone, dateTime, manually, 0);
     }
 
     public CallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId) {
         this.phone = phone;
-        this.createDateTime = LocalDateTime.now();
-        this.dateTime = dateTime;
+        this.createDateTime = convertToMoscow(LocalDateTime.now());
+        this.dateTime = convertToMoscow(dateTime);
         this.manually = manually;
         this.subtypeId = subtypeId;
     }
 
-    public CallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId, long detailsId, String tid, String title) {
-        this.phone = phone;
-        this.createDateTime = LocalDateTime.now();
-        this.subtypeId = subtypeId;
-        this.dateTime = dateTime;
-        this.manually = manually;
-        this.detailsId = detailsId;
-        this.tid = tid;
-        this.title = title;
+    private LocalDateTime convertToMoscow(LocalDateTime localDateTime) {
+        return ZonedDateTime.of(localDateTime, ZonedDateTime.now().getZone())
+                .withZoneSameInstant(zone)
+                .toLocalDateTime();
     }
 
-    @PersistenceConstructor
-    public CallHistory(long id, String phone, LocalDateTime createDateTime, LocalDateTime dateTime, long subtypeId, long detailsId, String tid, String title, boolean manually) {
-        this.id = id;
-        this.phone = phone;
-        this.createDateTime = createDateTime;
-        this.dateTime = dateTime;
-        this.subtypeId = subtypeId;
-        this.detailsId = detailsId;
-        this.tid = tid;
-        this.title = title;
-        this.manually = manually;
+    private LocalDateTime convertFromMoscow(LocalDateTime localDateTime) {
+        return ZonedDateTime.of(localDateTime, zone)
+                .withZoneSameInstant(ZonedDateTime.now().getZone())
+                .toLocalDateTime();
     }
 
     public long getId() {
-        return this.id;
+        return id;
     }
 
     public String getPhone() {
-        return this.phone;
+        return phone;
     }
 
     public void setPhone(String phone) {
@@ -84,19 +74,27 @@ public class CallHistory {
     }
 
     public LocalDateTime getCreateDateTime() {
-        return this.createDateTime;
+        return convertFromMoscow(createDateTime);
+    }
+
+    public void setCreateDateTime(LocalDateTime createDateTime) {
+        this.createDateTime = convertToMoscow(createDateTime);
     }
 
     public LocalDateTime getDateTime() {
-        return this.dateTime;
+        return convertFromMoscow(dateTime);
+    }
+
+    public LocalDateTime getDateTimeFromDB() {
+        return dateTime;
     }
 
     public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
+        this.dateTime = convertToMoscow(dateTime);
     }
 
     public long getSubtypeId() {
-        return this.subtypeId;
+        return subtypeId;
     }
 
     public void setSubtypeId(long subtypeId) {
@@ -104,7 +102,7 @@ public class CallHistory {
     }
 
     public long getDetailsId() {
-        return this.detailsId;
+        return detailsId;
     }
 
     public void setDetailsId(long detailsId) {
@@ -112,7 +110,7 @@ public class CallHistory {
     }
 
     public String getTid() {
-        return this.tid;
+        return tid;
     }
 
     public void setTid(String tid) {
@@ -120,7 +118,7 @@ public class CallHistory {
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     public void setTitle(String title) {
@@ -128,14 +126,10 @@ public class CallHistory {
     }
 
     public boolean isManually() {
-        return this.manually;
+        return manually;
     }
 
     public void setManually(boolean manually) {
         this.manually = manually;
-    }
-
-    public void setCreateDateTime(LocalDateTime createDateTime) {
-        this.createDateTime = createDateTime;
     }
 }

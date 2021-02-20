@@ -16,8 +16,8 @@ public class CallHistoryPojo {
         this.id = callHistory.getId();
         this.date = callHistory.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
         this.phone = callHistory.getPhone();
-        this.subtype = ((CatalogSubtype)catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
-        this.details = ((CatalogDetails)catalogService.getCatalogDetailsById(callHistory.getDetailsId()).get()).getName();
+        this.subtype = catalogService.getSubtypeById(callHistory.getSubtypeId()).get().getName();
+        this.details = catalogService.getCatalogDetailsById(callHistory.getDetailsId()).orElse(new CatalogDetails(null)).getName();
         this.tid = callHistory.getTid();
         this.title = callHistory.getTitle();
     }

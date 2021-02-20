@@ -1,6 +1,7 @@
 package io.github.divinator.service;
 
 import io.github.divinator.datasource.entity.CallHistory;
+import io.github.divinator.datasource.entity.CatalogDetails;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -41,14 +42,20 @@ public class CSVService {
             )) {
                 values.forEach(callHistory -> {
                     try {
-                        LocalDateTime dateTime = callHistory.getDateTime();
+                        LocalDateTime dateTime = callHistory.getDateTimeFromDB();
                         String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
                         String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
                         String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
-                        String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).get()).getName();
+                        String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).orElse(new CatalogDetails(null))).getName();
                         String tid = callHistory.getTid();
                         String title = String.format("Телефон:%s", callHistory.getPhone());
                         String error = "";
+
+                        if (callHistory.getSubtypeId() == 13) {
+                            error = details;
+                            details = "";
+                        }
+
                         csvPrinter.printRecord(date, time, subtype, details, tid, title, error);
                     } catch (IOException e) {
                         LOG.error(String.format("Ошибка записи звонка в файл %s (\"%s\")", csv, e.getMessage()));

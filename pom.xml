@@ -6,7 +6,7 @@
 
   <groupId>io.github.divinator</groupId>
   <artifactId>miniCRM</artifactId>
-  <version>0.0.2-alpha</version>
+  <version>0.0.3-alpha</version>
 
   <name>miniCRM</name>
   <!-- FIXME change it to the project's website -->
@@ -19,7 +19,7 @@
     <build.lib>${project.build.directory}/lib</build.lib>
     <build.bin>${project.build.directory}/bin</build.bin>
     <build.name.app>${project.name}</build.name.app>
-    <build.app.version>0.0.2.0</build.app.version>
+    <build.app.version>0.0.3.0</build.app.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <start-class>io.github.divinator.App</start-class>

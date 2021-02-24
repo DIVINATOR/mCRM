@@ -52,6 +52,7 @@ public abstract class AppFX extends Application {
 
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 

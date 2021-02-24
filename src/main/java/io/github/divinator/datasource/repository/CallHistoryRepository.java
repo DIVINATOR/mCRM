@@ -1,21 +1,22 @@
 package io.github.divinator.datasource.repository;
 
-import io.github.divinator.datasource.entity.CallHistory;
-import java.time.LocalDateTime;
+import io.github.divinator.datasource.entity.CallHistoryEntity;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
-public interface CallHistoryRepository extends PagingAndSortingRepository<CallHistory, Long> {
-    CallHistory findFirstByOrderByDateTimeDesc();
+public interface CallHistoryRepository extends PagingAndSortingRepository<CallHistoryEntity, Long> {
+    CallHistoryEntity findFirstByOrderByDateTimeDesc();
 
-    CallHistory findFirstByOrderByCreateDateTimeDesc();
+    CallHistoryEntity findFirstByOrderByCreateDateTimeDesc();
 
-    CallHistory findByCreateDateTime(LocalDateTime localDateTime);
+    CallHistoryEntity findByCreateDateTime(LocalDateTime localDateTime);
 
-    CallHistory findByDateTime(LocalDateTime localDateTime);
+    CallHistoryEntity findByDateTime(LocalDateTime localDateTime);
 
-    Iterable<CallHistory> findAllByDateTimeAfter(LocalDateTime localDateTime);
+    Iterable<CallHistoryEntity> findAllByDateTimeAfter(LocalDateTime localDateTime);
 
-    Iterable<CallHistory> findAllByDateTimeBetween(LocalDateTime localDateTimeFrom, LocalDateTime localDateTimeTo);
+    Iterable<CallHistoryEntity> findAllByDateTimeBetween(LocalDateTime localDateTimeFrom, LocalDateTime localDateTimeTo);
 }

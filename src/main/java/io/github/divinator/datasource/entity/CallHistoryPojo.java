@@ -12,14 +12,14 @@ public class CallHistoryPojo {
     private final String tid;
     private final String title;
 
-    public CallHistoryPojo(CallHistory callHistory, CatalogService catalogService) {
-        this.id = callHistory.getId();
-        this.date = callHistory.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
-        this.phone = callHistory.getPhone();
-        this.subtype = catalogService.getSubtypeById(callHistory.getSubtypeId()).get().getName();
-        this.details = catalogService.getCatalogDetailsById(callHistory.getDetailsId()).orElse(new CatalogDetails(null)).getName();
-        this.tid = callHistory.getTid();
-        this.title = callHistory.getTitle();
+    public CallHistoryPojo(CallHistoryEntity callHistoryEntity, CatalogService catalogService) {
+        this.id = callHistoryEntity.getId();
+        this.date = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
+        this.phone = callHistoryEntity.getPhone();
+        this.subtype = catalogService.getSubtypeById(callHistoryEntity.getSubtypeId()).get().getName();
+        this.details = catalogService.getCatalogDetailsById(callHistoryEntity.getDetailsId()).orElse(new CatalogDetails(null)).getName();
+        this.tid = callHistoryEntity.getTid();
+        this.title = callHistoryEntity.getTitle();
     }
 
     public long getId() {

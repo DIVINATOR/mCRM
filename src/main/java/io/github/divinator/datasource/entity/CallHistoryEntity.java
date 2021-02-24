@@ -1,16 +1,16 @@
 package io.github.divinator.datasource.entity;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
+/**
+ * Сущность описывает запись для журнала звонков в таблице базы данных.
+ */
 @Table("t_call_history")
-public class CallHistory {
+public class CallHistoryEntity {
     @Id
     private long id;
     @Column("phone")
@@ -30,35 +30,24 @@ public class CallHistory {
     @Column("manually")
     private boolean manually;
 
-    @Transient
-    private final ZoneId zone = ZoneId.of("Europe/Moscow");
-
-    public CallHistory() {
-        this(null, LocalDateTime.now(), false);
+    public CallHistoryEntity() {
     }
 
-    public CallHistory(String phone, LocalDateTime dateTime, boolean manually) {
-        this(phone, dateTime, manually, 0);
+    public CallHistoryEntity(LocalDateTime createDateTime, boolean manually) {
+        this.createDateTime = createDateTime;
+        this.manually = manually;
     }
 
-    public CallHistory(String phone, LocalDateTime dateTime, boolean manually, long subtypeId) {
+    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, boolean manually) {
+        this(phone, createDateTime, dateTime, manually, 0);
+    }
+
+    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, boolean manually, long subtypeId) {
         this.phone = phone;
-        this.createDateTime = convertToMoscow(LocalDateTime.now());
-        this.dateTime = convertToMoscow(dateTime);
+        this.createDateTime = createDateTime;
+        this.dateTime = dateTime;
         this.manually = manually;
         this.subtypeId = subtypeId;
-    }
-
-    private LocalDateTime convertToMoscow(LocalDateTime localDateTime) {
-        return ZonedDateTime.of(localDateTime, ZonedDateTime.now().getZone())
-                .withZoneSameInstant(zone)
-                .toLocalDateTime();
-    }
-
-    private LocalDateTime convertFromMoscow(LocalDateTime localDateTime) {
-        return ZonedDateTime.of(localDateTime, zone)
-                .withZoneSameInstant(ZonedDateTime.now().getZone())
-                .toLocalDateTime();
     }
 
     public long getId() {
@@ -74,23 +63,19 @@ public class CallHistory {
     }
 
     public LocalDateTime getCreateDateTime() {
-        return convertFromMoscow(createDateTime);
+        return createDateTime;
     }
 
     public void setCreateDateTime(LocalDateTime createDateTime) {
-        this.createDateTime = convertToMoscow(createDateTime);
+        this.createDateTime = createDateTime;
     }
 
     public LocalDateTime getDateTime() {
-        return convertFromMoscow(dateTime);
-    }
-
-    public LocalDateTime getDateTimeFromDB() {
         return dateTime;
     }
 
     public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = convertToMoscow(dateTime);
+        this.dateTime = dateTime;
     }
 
     public long getSubtypeId() {

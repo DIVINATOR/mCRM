@@ -1,7 +1,7 @@
 package io.github.divinator.controller;
 
 import io.github.divinator.config.AppConfig;
-import io.github.divinator.datasource.entity.CallHistory;
+import io.github.divinator.datasource.entity.CallHistoryEntity;
 import io.github.divinator.datasource.entity.CallHistoryPojo;
 import io.github.divinator.datasource.entity.CatalogDetails;
 import io.github.divinator.datasource.entity.CatalogSubtype;
@@ -10,8 +10,8 @@ import io.github.divinator.javafx.view.FxLoggerArea;
 import io.github.divinator.service.CSVService;
 import io.github.divinator.service.CallLogService;
 import io.github.divinator.service.CatalogService;
+import io.github.divinator.service.SettingsService;
 import io.github.divinator.tray.AppTrayMouseListener;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,9 +33,7 @@ import java.awt.MenuItem;
 import java.awt.*;
 import java.io.File;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
@@ -47,62 +45,52 @@ import java.util.stream.IntStream;
 @FXMLController(value = "mainController", view = "main.fxml")
 public class MainController implements Initializable {
 
-    @FXML
-    private Text username;
-    @FXML
-    private AnchorPane rootPane;
-    @FXML
-    private TextArea logArea;
-    @FXML
-    private TitledPane history;
-    @FXML
-    private TextField phone;
-    @FXML
-    private DatePicker date;
-    @FXML
-    private ComboBox<Integer> hour;
-    @FXML
-    private ComboBox<Integer> minute;
-    @FXML
-    private ComboBox<Integer> second;
-    @FXML
-    ComboBox<String> subtype;
-    @FXML
-    ComboBox<String> details;
-    @FXML
-    TextField tid;
-    @FXML
-    TextField title;
-    @FXML
-    TableView<CallHistoryPojo> callhistorytable;
-    @FXML
-    Text countcalls;
-    @FXML
-    DatePicker callhistorydate;
-    @FXML
-    Circle indicator;
+    @FXML private AnchorPane rootPane;
+    @FXML private Text username, countcalls;
+    @FXML private TextArea logArea;
+    @FXML private TextField phone, tid, title, settingsLogin;
+    @FXML private TitledPane history;
+    @FXML private DatePicker date, callhistorydate;
+    @FXML private ComboBox<String> hour, minute, second, subtype, details;
+    @FXML private TableView<CallHistoryPojo> callhistorytable;
+    @FXML private Circle indicator;
 
     private final Logger LOG = LoggerFactory.getLogger(MainController.class);
-    private final AppConfig config;
+    private final SettingsService settingsService;
     private final ApplicationContext applicationContext;
     private final CatalogService catalogService;
     private final CSVService csvService;
+    private final ZoneId zoneId;
     private long countHistory;
     private ResourceBundle resources;
 
-    public MainController(AppConfig config, ApplicationContext applicationContext, CatalogService catalogService, CSVService csvService) {
-        this.config = config;
+    public MainController(
+            SettingsService settingsService,
+            ApplicationContext applicationContext,
+            CatalogService catalogService,
+            CSVService csvService
+    ) {
+        this.settingsService = settingsService;
         this.csvService = csvService;
         this.applicationContext = applicationContext;
         this.catalogService = catalogService;
+        this.zoneId = ZoneId.systemDefault();
     }
 
+    /**
+     * Called to initialize a controller after its root element has been
+     * completely processed.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or
+     *                  <tt>null</tt> if the location is not known.
+     * @param resources The resources used to localize the root object, or <tt>null</tt> if
+     *                  the root object was not localized.
+     */
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
         //this.initializeLogger();
         this.initializeUsername();
-        this.initializeDate();
-        this.initializeTime();
+        this.initializeDateTime();
         this.initializeSubtype();
         this.initializeCountCallHistory();
         this.initializeCallHistoryDate();
@@ -129,29 +117,21 @@ public class MainController implements Initializable {
     }
 
     /**
-     * Метод инициализирует текущую дату.
+     * Метод инициализирует значения даты, часа и минут на форме.
      */
-    private void initializeDate() {
-        this.date.setValue(LocalDate.now());
-    }
-
-    /**
-     * Метод инициализирует значения для выбора времени.
-     * <p>Часы и минуты.
-     */
-    private void initializeTime() {
-        List<Integer> hourCollection = IntStream.range(0, 24).boxed().collect(Collectors.toList());
-        List<Integer> minuteCollection = IntStream.range(0, 60).boxed().collect(Collectors.toList());
-        this.hour.setItems(FXCollections.observableArrayList(hourCollection));
-        this.minute.setItems(FXCollections.observableArrayList(minuteCollection));
-        this.updateTime();
+    private void initializeDateTime() {
+        this.hour.setItems(FXCollections.observableArrayList(createUnitTimeRange(24)));
+        this.minute.setItems(FXCollections.observableArrayList(createUnitTimeRange(60)));
+        this.updateDateTime();
     }
 
     /**
      * Метод инициализирует имя пользователя из ОС.
      */
     private void initializeUsername() {
-        this.username.setText(System.getProperty("user.name"));
+        String login = (String) settingsService.getSettings("user.name").getValue();
+        this.username.setText(login);
+        this.settingsLogin.setText(login);
     }
 
     /**
@@ -164,33 +144,49 @@ public class MainController implements Initializable {
                 .map(CatalogSubtype::getName)
                 .collect(Collectors.toList());
         this.subtype.setItems(FXCollections.observableArrayList(collect));
+        this.subtype.setVisibleRowCount(collect.size());
     }
 
     private void initializeScheduler() {
-        final CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
+        CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
 
         Runnable runnable = () -> {
-            if (this.countHistory < callLogService.getCountCallHistory()) {
 
-                CallHistory lastCallHistory = callLogService.getLastCallHistory();
+            try {
+                if (this.countHistory < callLogService.getCountCallHistory()) {
+                    CallHistoryEntity lastCallHistoryEntity = callLogService.getLastCallHistoryEntity();
 
-                this.LOG.info(String.format("Входящий звонок: %s", lastCallHistory.getPhone()));
+                    if (!lastCallHistoryEntity.isManually()) {
+                        this.phone.setText(lastCallHistoryEntity.getPhone());
+                        ZonedDateTime dateTime = ZonedDateTime.of(lastCallHistoryEntity.getDateTime(), ZoneId.of((String) settingsService.getSettings("application.db.zone").getValue()));
+                        ZonedDateTime systemDateTime = dateTime.withZoneSameInstant(zoneId);
+                        this.date.setValue(systemDateTime.toLocalDate());
+                        this.hour.setValue(convertUnitTimeFromInteger(systemDateTime.getHour()));
+                        this.minute.setValue(convertUnitTimeFromInteger(systemDateTime.getMinute()));
+                        this.second.setValue(convertUnitTimeFromInteger(systemDateTime.getSecond()));
 
-                if (!lastCallHistory.isManually()) {
-                    this.phone.setText(lastCallHistory.getPhone());
-                    this.date.setValue(lastCallHistory.getDateTime().toLocalDate());
-                    this.hour.setValue(lastCallHistory.getDateTime().getHour());
-                    this.minute.setValue(lastCallHistory.getDateTime().getMinute());
-                    this.second.setValue(lastCallHistory.getDateTime().getSecond());
+                        if (lastCallHistoryEntity.getSubtypeId() != 0) {
+                            this.subtype.getSelectionModel().select(
+                                    catalogService.getSubtypeById(lastCallHistoryEntity.getSubtypeId())
+                                            .get()
+                                            .getName()
+                            );
+                        }
 
-                    if (lastCallHistory.getSubtypeId() != 0) {
-                        this.subtype.getSelectionModel().select(catalogService.getSubtypeById(lastCallHistory.getSubtypeId()).get().getName());
+                        this.LOG.info(String.format("[%s %s:%s] Входящий звонок: %s. Подтип:%s",
+                                dateTime.toLocalDate(),
+                                dateTime.getHour(),
+                                dateTime.getMinute(),
+                                lastCallHistoryEntity.getPhone(),
+                                subtype.getValue()
+                        ));
                     }
+
+                    this.updateCountHistory();
                 }
-
-                this.updateCountHistory();
+            } catch (IllegalStateException e) {
+                LOG.error("База данных занята");
             }
-
         };
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
@@ -229,7 +225,7 @@ public class MainController implements Initializable {
         LocalDateTime localDateTimeFrom = (this.callhistorydate.getValue()).atStartOfDay();
         LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 
-        List<CallHistoryPojo> collect = ((List<CallHistory>) callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo))
+        List<CallHistoryPojo> collect = ((List<CallHistoryEntity>) callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo))
                 .stream()
                 .map(callHistory -> new CallHistoryPojo(callHistory, catalogService))
                 .collect(Collectors.toList());
@@ -240,21 +236,22 @@ public class MainController implements Initializable {
 
     private void updateCountHistory() {
         this.countHistory = (this.applicationContext.getBean(CallLogService.class)).getCountCallHistory();
+        LOG.info("Счетчик количества записей обновлен.");
     }
 
     private void updatePhone() {
         this.phone.setText("");
     }
 
-    private void updateDate() {
-        this.initializeDate();
-    }
-
-    private void updateTime() {
-        LocalDateTime now = LocalDateTime.now();
-        this.hour.setValue(now.getHour());
-        this.minute.setValue(now.getMinute());
-        this.second.setValue(now.getSecond());
+    /**
+     * Метод обновляет значение даты, часов и минут на форме.
+     */
+    public void updateDateTime() {
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        this.date.setValue(now.toLocalDate());
+        this.hour.setValue(convertUnitTimeFromInteger(now.getHour()));
+        this.minute.setValue(convertUnitTimeFromInteger(now.getMinute()));
+        //this.second.setValue(now.getSecond());
     }
 
     private void updateSubtype() {
@@ -290,8 +287,7 @@ public class MainController implements Initializable {
     @FXML
     public void onMouseClickedUpdate() {
         this.updatePhone();
-        this.updateDate();
-        this.updateTime();
+        this.updateDateTime();
         this.updateSubtype();
         this.updateDetails();
         this.updateTid();
@@ -313,11 +309,6 @@ public class MainController implements Initializable {
     @FXML
     public void onSelectDate() {
         this.loadCallHistoryTable();
-    }
-
-    @FXML
-    public void onHidingSelectDate() {
-
     }
 
     @FXML
@@ -354,27 +345,34 @@ public class MainController implements Initializable {
         if (!this.tid.getText().isEmpty()) {
             this.tid.setStyle(noneBorder);
         }
-
     }
 
     /**
      * Метод выполняет валидацию заполнения полей ввода.
+     *
      * @return true в случае если все заполнено корректно, в противном случае false;
      */
     private boolean validationInputFields() {
         String redBorder = "-fx-border-color: red;";
 
-        if (this.phone.getText().isEmpty()) {
-            this.phone.setStyle(redBorder);
-        } else if (this.subtype.getValue() == null || this.subtype.getValue().isEmpty()) {
-            this.subtype.setStyle(redBorder);
-        } else if (catalogService.getSubtypeByName(this.subtype.getValue()).getDetails().size() > 0 && (this.details.getValue() == null || this.details.getValue().isEmpty())) {
-            System.out.println(catalogService.getSubtypeByName(this.subtype.getValue()).getDetails().size());
-            this.details.setStyle(redBorder);
-        } else if (this.tid.getText().isEmpty()) {
-            this.tid.setStyle(redBorder);
-        } else {
-            return true;
+        try {
+            if (this.phone.getText() == null || this.phone.getText().length() == 0) {
+                this.phone.setStyle(redBorder);
+                LOG.error("Не заполнен номер телефона.");
+            } else if (this.subtype.getValue() == null || this.subtype.getValue().isEmpty()) {
+                this.subtype.setStyle(redBorder);
+                LOG.error("Не заполнен \"Подтип\".");
+            } else if (catalogService.getSubtypeByName(this.subtype.getValue()).getDetails().size() > 0 && (this.details.getValue() == null || this.details.getValue().isEmpty())) {
+                this.details.setStyle(redBorder);
+                LOG.error("Не заполнены \"Детали\".");
+            } else if (this.tid.getText().isEmpty()) {
+                this.tid.setStyle(redBorder);
+                LOG.error("Не заполнен \"TID\".");
+            } else {
+                return true;
+            }
+        } catch (NullPointerException e) {
+            LOG.error("Ошибка валидации формы.");
         }
 
         return false;
@@ -385,52 +383,43 @@ public class MainController implements Initializable {
      */
     @FXML
     public void onActionSave() {
-
-        System.out.println(validationInputFields());
-
         if (validationInputFields()) {
 
-            LocalDateTime localDateTime = (this.date.getValue()).atTime(
+            ZonedDateTime dateTime = (this.date.getValue()).atTime(
                     Integer.parseInt(String.valueOf(this.hour.getValue())),
                     Integer.parseInt(String.valueOf(this.minute.getValue())),
-                    Integer.parseInt(String.valueOf(this.second.getValue()))
-            );
+                    Integer.parseInt(String.valueOf((this.second.getValue() != null ? this.second.getValue() : "00")))
+            ).atZone(ZoneId.systemDefault())
+                    .withZoneSameInstant(ZoneId.of(
+                            (String) settingsService.getSettings("application.db.zone").getValue()
+                    ));
 
             CallLogService callLogService = this.applicationContext.getBean(CallLogService.class);
 
-            CallHistory lastCallHistory = null;
-            if (callLogService.getCallHistory(localDateTime) != null) {
-                lastCallHistory = callLogService.getLastCallHistory();
-            } else {
-                lastCallHistory = new CallHistory();
-                lastCallHistory.setManually(true);
+            CallHistoryEntity callHistoryEntity = callLogService.getCallHistoryEntity(dateTime.toLocalDateTime());
+
+            if (callHistoryEntity == null) {
+                callHistoryEntity = new CallHistoryEntity(Instant.now().atZone(zoneId).toLocalDateTime(), true);
             }
 
-            lastCallHistory.setPhone(this.phone.getText());
-            lastCallHistory.setDateTime(localDateTime);
+            callHistoryEntity.setPhone(phone.getText());
+            callHistoryEntity.setDateTime(dateTime.toLocalDateTime());
 
-            CatalogSubtype subtypeByName = this.catalogService.getSubtypeByName(this.subtype.getValue());
-
-            CatalogDetails editDetails = subtypeByName.getDetails()
+            CatalogSubtype subtype = this.catalogService.getSubtypeByName(this.subtype.getValue());
+            CatalogDetails editDetails = subtype.getDetails()
                     .stream()
                     .filter(o -> details.getValue().equals(o.getName()))
                     .findFirst().orElse(new CatalogDetails(null));
 
-            lastCallHistory.setSubtypeId(subtypeByName.getSubtypeId());
+            callHistoryEntity.setSubtypeId(subtype.getSubtypeId());
+            callHistoryEntity.setDetailsId(editDetails.getId());
+            callHistoryEntity.setTid(tid.getText());
+            callHistoryEntity.setTitle(title.getText());
 
-            if (editDetails.getName() == null) {
-                lastCallHistory.setDetailsId(0);
-            } else {
-                lastCallHistory.setDetailsId(editDetails.getId());
-            }
+            callLogService.saveCallHistory(callHistoryEntity);
 
-            lastCallHistory.setTid(this.tid.getText());
-            lastCallHistory.setTitle(this.title.getText());
-            CallHistory callHistory = callLogService.saveCallHistory(lastCallHistory);
             this.loadCallHistoryTable();
-            if (callHistory != null) {
-                this.onMouseClickedUpdate();
-            }
+            this.onMouseClickedUpdate();
         }
     }
 
@@ -446,22 +435,55 @@ public class MainController implements Initializable {
             LocalDateTime localDateTimeFrom = this.callhistorydate.getValue().atStartOfDay();
             LocalDateTime localDateTimeTo = localDateTimeFrom.toLocalDate().atTime(LocalTime.MAX);
 
-            Iterable<CallHistory> callHistoryBetween = callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo);
+            Iterable<CallHistoryEntity> callHistoryBetween = callLogService.getCallHistoryBetween(localDateTimeFrom, localDateTimeTo);
             File file = new File(export.getPath().concat("\\export.csv"));
             csvService.write(file, callHistoryBetween);
         }
     }
 
     /**
-     * Метод выбора директории.
+     * Метод инициализации окна выбора директории.
      *
-     * @param title Название заголовка.
-     * @return Директория
+     * @param title Название заголовка окна выбора директории.
+     * @return Выбранная директория.
      */
     private File directoryChooser(String title) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle(title);
         return directoryChooser.showDialog(this.rootPane.getScene().getWindow());
+    }
+
+    /**
+     * Метод генерирует список значений единиц времени.
+     *
+     * @param endExclusive Конечное значение(исключительно).
+     * @return Список значений единиц времени
+     */
+    private List<String> createUnitTimeRange(int endExclusive) {
+        return IntStream.range(0, endExclusive)
+                .boxed()
+                .map(this::convertUnitTimeFromInteger)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Метод конвертирует тип единицы времени из Integer в String.
+     *
+     * @param unitTime Единица времени.
+     * @return Единица времени преобразованная к типу String.
+     */
+    private String convertUnitTimeFromInteger(Integer unitTime) {
+        return (String.valueOf(unitTime).length() < 2) ? String.format("0%s", unitTime) : String.valueOf(unitTime);
+    }
+
+    /**
+     * Метод конвертирует тип единицы времени из String в Integer.
+     *
+     * @param unitTime Единица времени.
+     * @return Единица времени преобразованная к типу Integer.
+     */
+    private Integer convertUnitTimeFromString(String unitTime) {
+        return Integer.parseInt(unitTime);
     }
 
     private void initializeTray() {
@@ -494,10 +516,5 @@ public class MainController implements Initializable {
         } else {
             this.LOG.info("Tray not supported");
         }
-
-    }
-
-    public void onActionClose() {
-        Platform.exit();
     }
 }

@@ -1,6 +1,6 @@
 package io.github.divinator.service;
 
-import io.github.divinator.datasource.entity.CallHistory;
+import io.github.divinator.datasource.entity.CallHistoryEntity;
 import io.github.divinator.datasource.entity.CatalogDetails;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -31,7 +31,7 @@ public class CSVService {
      * @param csv Файл формата csv.
      * @param values История звонков.
      */
-    public void write(File csv, Iterable<CallHistory> values) {
+    public void write(File csv, Iterable<CallHistoryEntity> values) {
         try (PrintWriter out = new PrintWriter(csv, "Cp1251")) {
             try (CSVPrinter csvPrinter = new CSVPrinter(
                     out,
@@ -42,7 +42,7 @@ public class CSVService {
             )) {
                 values.forEach(callHistory -> {
                     try {
-                        LocalDateTime dateTime = callHistory.getDateTimeFromDB();
+                        LocalDateTime dateTime = callHistory.getDateTime();
                         String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
                         String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
                         String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();

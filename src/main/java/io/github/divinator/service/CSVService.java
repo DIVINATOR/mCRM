@@ -1,7 +1,6 @@
 package io.github.divinator.service;
 
-import io.github.divinator.datasource.entity.CallHistoryEntity;
-import io.github.divinator.datasource.entity.CatalogDetails;
+import io.github.divinator.datasource.entity.CallHistoryPojo;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -18,12 +17,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class CSVService {
 
-    private final CatalogService catalogService;
     private final Logger LOG = LoggerFactory.getLogger(CSVService.class);
-
-    public CSVService(CatalogService catalogService) {
-        this.catalogService = catalogService;
-    }
 
     /**
      * Метод записывает в файл csv историю звонков.
@@ -31,34 +25,40 @@ public class CSVService {
      * @param csv Файл формата csv.
      * @param values История звонков.
      */
-    public void write(File csv, Iterable<CallHistoryEntity> values) {
+    public void write(File csv, Iterable<CallHistoryPojo> values) {
         try (PrintWriter out = new PrintWriter(csv, "Cp1251")) {
             try (CSVPrinter csvPrinter = new CSVPrinter(
                     out,
                     CSVFormat.EXCEL
-                            .withHeader("Дата", "время", "Подтип", "Детали", "TID", "Описание", "Фиксирование сбоя Avaya one-x")
+                            .withHeader("Дата", "Время", "Дата+Время", "Подтип", "Подтип", "Детали", "TID", "Описание", "Фиксирование сбоя Avaya one-x")
                             .withQuoteMode(QuoteMode.ALL)
                             .withDelimiter(';')
             )) {
                 values.forEach(callHistory -> {
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s");
+                    LocalDateTime dateTime = LocalDateTime.parse(callHistory.getDateTime(), dateTimeFormatter);
+                    String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                    String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
+                    String type = callHistory.getType();
+                    String subtype = callHistory.getSubtype();
+                    String details = callHistory.getDetails();
+                    String tid = callHistory.getTid();
+                    String title = String.format("Телефон:%s\t%s", callHistory.getPhone(), callHistory.getTitle());
+                    String error = "";
                     try {
-                        LocalDateTime dateTime = callHistory.getDateTime();
-                        String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                        String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
-                        String subtype = (catalogService.getSubtypeById(callHistory.getSubtypeId()).get()).getName();
-                        String details = (catalogService.getCatalogDetailsById(callHistory.getDetailsId()).orElse(new CatalogDetails(null))).getName();
-                        String tid = callHistory.getTid();
-                        String title = String.format("Телефон:%s", callHistory.getPhone());
-                        String error = "";
-
-                        if (callHistory.getSubtypeId() == 13) {
-                            error = details;
-                            details = "";
-                        }
-
-                        csvPrinter.printRecord(date, time, subtype, details, tid, title, error);
+                        csvPrinter.printRecord(
+                                date,
+                                time,
+                                callHistory.getDateTime(),
+                                type,
+                                subtype,
+                                details,
+                                tid,
+                                title,
+                                error
+                        );
                     } catch (IOException e) {
-                        LOG.error(String.format("Ошибка записи звонка в файл %s (\"%s\")", csv, e.getMessage()));
+                        //e.printStackTrace();
                     }
                 });
             }

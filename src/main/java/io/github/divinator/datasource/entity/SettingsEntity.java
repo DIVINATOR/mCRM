@@ -48,8 +48,10 @@ public class SettingsEntity {
      * Метод задает новое значение настройки.
      *
      * @param value Новое значение настройки
+     * @return
      */
-    public void setValue(Object value) {
+    public SettingsEntity setValue(Object value) {
         this.value = value;
+        return this;
     }
 }

@@ -19,6 +19,8 @@ public class CallHistoryEntity {
     private LocalDateTime createDateTime;
     @Column("date")
     private LocalDateTime dateTime;
+    @Column("type_id")
+    private long typeId;
     @Column("subtype_id")
     private long subtypeId;
     @Column("details_id")
@@ -31,23 +33,19 @@ public class CallHistoryEntity {
     private boolean manually;
 
     public CallHistoryEntity() {
+
     }
 
-    public CallHistoryEntity(LocalDateTime createDateTime, boolean manually) {
-        this.createDateTime = createDateTime;
-        this.manually = manually;
-    }
-
-    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, boolean manually) {
-        this(phone, createDateTime, dateTime, manually, 0);
-    }
-
-    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, boolean manually, long subtypeId) {
+    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, long typeId, long subtypeId, long detailsId, String tid, String title, boolean manually) {
         this.phone = phone;
         this.createDateTime = createDateTime;
         this.dateTime = dateTime;
-        this.manually = manually;
+        this.typeId = typeId;
         this.subtypeId = subtypeId;
+        this.detailsId = detailsId;
+        this.tid = tid;
+        this.title = title;
+        this.manually = manually;
     }
 
     public long getId() {
@@ -58,63 +56,35 @@ public class CallHistoryEntity {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public LocalDateTime getCreateDateTime() {
         return createDateTime;
-    }
-
-    public void setCreateDateTime(LocalDateTime createDateTime) {
-        this.createDateTime = createDateTime;
     }
 
     public LocalDateTime getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
+    public long getTypeId() {
+        return typeId;
     }
 
     public long getSubtypeId() {
         return subtypeId;
     }
 
-    public void setSubtypeId(long subtypeId) {
-        this.subtypeId = subtypeId;
-    }
-
     public long getDetailsId() {
         return detailsId;
-    }
-
-    public void setDetailsId(long detailsId) {
-        this.detailsId = detailsId;
     }
 
     public String getTid() {
         return tid;
     }
 
-    public void setTid(String tid) {
-        this.tid = tid;
-    }
-
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public boolean isManually() {
         return manually;
-    }
-
-    public void setManually(boolean manually) {
-        this.manually = manually;
     }
 }

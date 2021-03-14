@@ -5,9 +5,11 @@
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableView?>
@@ -159,7 +161,7 @@
                                                                   <Insets right="5.0" />
                                                                </HBox.margin>
                                                             </Label>
-                                                            <TextField fx:id="phone" onKeyPressed="#onInputPhone" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" style="-fx-border: none;" />
+                                                            <TextField fx:id="phone" onMousePressed="#onMousePressed" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" style="-fx-border: none;" />
                                                          </children>
                                                       </HBox>
                                                    </children>
@@ -209,32 +211,74 @@
                                           <HBox alignment="CENTER_LEFT" nodeOrientation="LEFT_TO_RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <children>
                                                 <Group HBox.hgrow="ALWAYS">
-                                                   <children>
-                                                      <HBox alignment="CENTER_LEFT">
-                                                         <children>
-                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.subtype" textAlignment="CENTER">
-                                                               <HBox.margin>
-                                                                  <Insets right="5.0" />
-                                                               </HBox.margin>
-                                                            </Label>
-                                                            <ComboBox fx:id="subtype" editable="true" onHiding="#onHidingSubtype" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" />
-                                                         </children>
-                                                      </HBox>
-                                                   </children>
                                                    <HBox.margin>
                                                       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                    </HBox.margin>
-                                                </Group>
-                                                <Group HBox.hgrow="ALWAYS">
                                                    <children>
                                                       <HBox alignment="CENTER_LEFT">
                                                          <children>
-                                                            <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" prefWidth="100.0" text="%gui.tab.0.label.details">
+                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.type" textAlignment="CENTER">
                                                                <HBox.margin>
                                                                   <Insets right="5.0" />
                                                                </HBox.margin>
                                                             </Label>
-                                                            <ComboBox fx:id="details" editable="true" onShowing="#onShowingDetails" prefHeight="25.0" prefWidth="280.0" promptText="%gui.tab.0.label.mandatory" />
+                                                            <ComboBox fx:id="type" editable="true" onMousePressed="#onMousePressed" onShowing="#onShowingTypes" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" />
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </Group>
+                                                <Group HBox.hgrow="ALWAYS">
+                                                   <HBox.margin>
+                                                      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                   </HBox.margin>
+                                                   <children>
+                                                      <HBox alignment="CENTER_LEFT">
+                                                         <children>
+                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.tid">
+                                                               <HBox.margin>
+                                                                  <Insets right="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <TextField fx:id="tid" onMousePressed="#onMousePressed" prefWidth="350.0" promptText="%gui.tab.0.label.mandatory" />
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </Group>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane>
+                                       <children>
+                                          <HBox alignment="CENTER_LEFT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <Group HBox.hgrow="ALWAYS">
+                                                   <HBox.margin>
+                                                      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                   </HBox.margin>
+                                                   <children>
+                                                      <HBox alignment="CENTER_LEFT">
+                                                         <children>
+                                                            <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" prefWidth="100.0" text="%gui.tab.0.label.subtype">
+                                                               <HBox.margin>
+                                                                  <Insets right="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <ComboBox fx:id="subtype" editable="true" onMousePressed="#onMousePressed" onShowing="#onShowingSubtypes" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" />
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </Group>
+                                                <Group HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <HBox alignment="CENTER_LEFT" nodeOrientation="LEFT_TO_RIGHT">
+                                                         <children>
+                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.title">
+                                                               <HBox.margin>
+                                                                  <Insets right="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <TextField fx:id="title" prefHeight="25.0" prefWidth="350.0" HBox.hgrow="ALWAYS" />
                                                          </children>
                                                       </HBox>
                                                    </children>
@@ -251,35 +295,23 @@
                                           <HBox alignment="CENTER_LEFT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <children>
                                                 <Group HBox.hgrow="ALWAYS">
-                                                   <children>
-                                                      <HBox alignment="CENTER_LEFT">
-                                                         <children>
-                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.tid">
-                                                               <HBox.margin>
-                                                                  <Insets right="5.0" />
-                                                               </HBox.margin>
-                                                            </Label>
-                                                            <TextField fx:id="tid" onKeyPressed="#onInputTID" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" />
-                                                         </children>
-                                                      </HBox>
-                                                   </children>
                                                    <HBox.margin>
                                                       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                    </HBox.margin>
-                                                </Group>
-                                                <Group HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <HBox alignment="CENTER_LEFT" nodeOrientation="LEFT_TO_RIGHT">
+                                                      <HBox alignment="CENTER_LEFT">
                                                          <children>
-                                                            <Label alignment="CENTER_RIGHT" prefWidth="100.0" text="%gui.tab.0.label.title">
+                                                            <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" prefWidth="100.0" text="%gui.tab.0.label.details">
                                                                <HBox.margin>
                                                                   <Insets right="5.0" />
                                                                </HBox.margin>
                                                             </Label>
-                                                            <TextField fx:id="title" prefHeight="25.0" prefWidth="350.0" HBox.hgrow="ALWAYS" />
+                                                            <ComboBox fx:id="details" editable="true" onMousePressed="#onMousePressed" onShowing="#onShowingDetails" prefWidth="200.0" promptText="%gui.tab.0.label.mandatory" />
                                                          </children>
                                                       </HBox>
                                                    </children>
+                                                </Group>
+                                                <Group HBox.hgrow="ALWAYS">
                                                    <HBox.margin>
                                                       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                    </HBox.margin>
@@ -365,6 +397,20 @@
                                                                   </HBox>
                                                                </children>
                                                             </Group>
+                                                            <Separator prefWidth="200.0">
+                                                               <padding>
+                                                                  <Insets bottom="5.0" top="5.0" />
+                                                               </padding>
+                                                            </Separator>
+                                                            <Group>
+                                                               <children>
+                                                                  <HBox alignment="CENTER_LEFT">
+                                                                     <children>
+                                                                        <CheckBox fx:id="followCheckBox" mnemonicParsing="false" text="%gui.tab.2.accordion.0.menu.1.label" />
+                                                                     </children>
+                                                                  </HBox>
+                                                               </children>
+                                                            </Group>
                                                          </children>
                                                       </VBox>
                                                    </children>
@@ -380,8 +426,11 @@
                                     </Accordion>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0">
                                       <buttons>
-                                        <Button mnemonicParsing="false" text="Button" />
+                                        <Button mnemonicParsing="false" onAction="#onSaveSettings" text="%gui.tab.0.button.save" />
                                       </buttons>
+                                       <VBox.margin>
+                                          <Insets left="5.0" right="5.0" />
+                                       </VBox.margin>
                                     </ButtonBar>
                                  </children>
                               </VBox>

@@ -1,12 +1,15 @@
 package io.github.divinator.datasource.entity;
 
 import io.github.divinator.service.CatalogService;
+
 import java.time.format.DateTimeFormatter;
 
 public class CallHistoryPojo {
+
     private final long id;
-    private final String date;
+    private final String dateTime;
     private final String phone;
+    private final String type;
     private final String subtype;
     private final String details;
     private final String tid;
@@ -14,39 +17,52 @@ public class CallHistoryPojo {
 
     public CallHistoryPojo(CallHistoryEntity callHistoryEntity, CatalogService catalogService) {
         this.id = callHistoryEntity.getId();
-        this.date = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
+
+        this.dateTime = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
+
         this.phone = callHistoryEntity.getPhone();
-        this.subtype = catalogService.getSubtypeById(callHistoryEntity.getSubtypeId()).get().getName();
-        this.details = catalogService.getCatalogDetailsById(callHistoryEntity.getDetailsId()).orElse(new CatalogDetails(null)).getName();
+        this.type = catalogService.getCatalogType(callHistoryEntity.getTypeId()).get().getName();
+
+        this.subtype = catalogService.getCatalogSubtype(
+                callHistoryEntity.getTypeId(),
+                callHistoryEntity.getSubtypeId()
+        ).get().getName();
+
+        this.details = catalogService.getCatalogDetails(
+                callHistoryEntity.getTypeId(),
+                callHistoryEntity.getSubtypeId(),
+                callHistoryEntity.getDetailsId()
+        ).orElse(new CatalogDetails("")).getName();
+
         this.tid = callHistoryEntity.getTid();
         this.title = callHistoryEntity.getTitle();
     }
 
-    public long getId() {
-        return this.id;
-    }
-
-    public String getDate() {
-        return this.date;
+    public String getDateTime() {
+        return dateTime;
     }
 
     public String getPhone() {
-        return this.phone;
+        return phone;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public String getSubtype() {
-        return this.subtype;
+        return subtype;
     }
 
     public String getDetails() {
-        return this.details;
+        return details;
     }
 
     public String getTid() {
-        return this.tid;
+        return tid;
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 }

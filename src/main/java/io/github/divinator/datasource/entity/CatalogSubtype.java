@@ -11,17 +11,18 @@ import java.util.Set;
 
 @Table("t_catalog_subtype")
 public class CatalogSubtype implements Comparable<CatalogSubtype> {
+
     @Id
     private long subtypeId;
+
     @Column("name")
     private final String name;
-    @MappedCollection(
-            keyColumn = "SUBTYPE_ID"
-    )
+
+    @MappedCollection(keyColumn = "SUBTYPE_ID")
     private final Set<CatalogDetails> details;
 
     public CatalogSubtype(String name) {
-        this(name, new HashSet());
+        this(name, new HashSet<>());
     }
 
     public CatalogSubtype(String name, Set<CatalogDetails> details) {

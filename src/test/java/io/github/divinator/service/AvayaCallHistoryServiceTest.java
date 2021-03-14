@@ -11,7 +11,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.nio.file.Paths;
 
-public class CallLogServiceTest {
+public class AvayaCallHistoryServiceTest {
 
     //@Test
     public void isFileHistoryExists() {

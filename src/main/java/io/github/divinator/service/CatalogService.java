@@ -2,13 +2,14 @@ package io.github.divinator.service;
 
 import io.github.divinator.datasource.entity.CatalogDetails;
 import io.github.divinator.datasource.entity.CatalogSubtype;
+import io.github.divinator.datasource.entity.CatalogType;
 import io.github.divinator.datasource.repository.CatalogDetailsRepository;
 import io.github.divinator.datasource.repository.CatalogRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 
 @Service
 public class CatalogService {
@@ -20,47 +21,48 @@ public class CatalogService {
         this.catalogRepository = catalogRepository;
         this.catalogDetailsRepository = catalogDetailsRepository;
         this.resourceBundle = resourceBundle;
-        this.initCatalog();
+        //this.initCatalog();
     }
 
-    public void initCatalog() {
-        if (this.catalogRepository.count() == 0L) {
-            this.catalogRepository.saveAll(
-                    Arrays.asList(
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.0"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.1"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.2"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.3"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.4"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.5"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.6"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.7"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.8"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.9"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.10"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.11"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.12"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.13"),
-                            CatalogSubtypeUtils.newInstance(this.resourceBundle, "catalog.subtype.14")
-                    )
-            );
-        }
-
+    public long count() {
+        return catalogRepository.count();
     }
 
-    public Iterable<CatalogSubtype> getSubtypes() {
-        return this.catalogRepository.findAll();
+    public void saveCatalogType(CatalogType catalogType) {
+        catalogRepository.save(catalogType);
     }
 
-    public CatalogSubtype getSubtypeByName(String name) {
-        return this.catalogRepository.findAllByName(name);
+    public void saveCatalogTypes(Iterable<CatalogType> catalogTypes) {
+        catalogRepository.saveAll(catalogTypes);
     }
 
-    public Optional<CatalogSubtype> getSubtypeById(long id) {
-        return this.catalogRepository.findById(id);
+    public CatalogType getCatalogType(String name) {
+        return catalogRepository.findAllByName(name);
     }
 
-    public Optional<CatalogDetails> getCatalogDetailsById(long id) {
-        return this.catalogDetailsRepository.findById(id);
+    public Optional<CatalogType> getCatalogType(long typeId) {
+        return catalogRepository.findById(typeId);
+    }
+
+    public Optional<CatalogSubtype> getCatalogSubtype(long typeId, long subtypeId) {
+        return getCatalogType(typeId).get().getSubtypes().stream().filter(new Predicate<CatalogSubtype>() {
+            @Override
+            public boolean test(CatalogSubtype subtype) {
+                return subtype.getSubtypeId() == subtypeId;
+            }
+        }).findFirst();
+    }
+
+    public Optional<CatalogDetails> getCatalogDetails(long typeId, long subtypeId, long detailsId) {
+        return getCatalogSubtype(typeId, subtypeId).get().getDetails().stream().filter(new Predicate<CatalogDetails>() {
+            @Override
+            public boolean test(CatalogDetails details) {
+                return details.getId() == detailsId;
+            }
+        }).findFirst();
+    }
+
+    public Iterable<CatalogType> getAllCatalogType() {
+        return catalogRepository.findAll();
     }
 }

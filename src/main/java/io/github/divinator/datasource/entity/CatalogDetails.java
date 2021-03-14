@@ -9,8 +9,10 @@ import org.springframework.data.relational.core.mapping.Table;
 public class CatalogDetails implements Comparable<CatalogDetails> {
     @Id
     private long id;
+
     @Column("name")
     private final String name;
+
     @Column("CATALOG_SUBTYPE")
     private CatalogSubtype catalogSubtype;
 

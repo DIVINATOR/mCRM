@@ -7,8 +7,16 @@
     -fx-font-size: 11px;
 }
 
+.header-border {
+    -fx-border-color: blue ;
+    -fx-border-width: 5 ;
+    -fx-border-style: segments(10, 15, 15, 15)  line-cap round;
+}
+
 .header-text {
     -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 16px;
+    -fx-padding: 5px;
 }
 
 .log-area {

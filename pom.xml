@@ -81,7 +81,7 @@
 
   <build>
     <plugins>
-      <!--    Сборка через Spring-->
+<!--          Сборка через Spring-->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -102,7 +102,7 @@
         </executions>
       </plugin>
 
-      <!--    Сборка через Maven-->
+<!--          Сборка через Maven-->
 <!--      <plugin>-->
 <!--        <groupId>org.apache.maven.plugins</groupId>-->
 <!--        <artifactId>maven-jar-plugin</artifactId>-->
@@ -110,34 +110,34 @@
 <!--        <configuration>-->
 <!--          <archive>-->
 <!--            <manifest>-->
-<!--          &lt;!&ndash;  <addClasspath>true</addClasspath>&ndash;&gt;-->
-<!--          &lt;!&ndash;  <classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+<!--              <addClasspath>true</addClasspath>-->
+<!--              <classpathPrefix>lib/</classpathPrefix>-->
 <!--              <mainClass>${start-class}</mainClass>-->
 <!--            </manifest>-->
 <!--          </archive>-->
 <!--        </configuration>-->
 <!--      </plugin>-->
 
-      <!--            <plugin>-->
-      <!--                <groupId>org.apache.maven.plugins</groupId>-->
-      <!--                <artifactId>maven-dependency-plugin</artifactId>-->
-      <!--                <version>3.1.2</version>-->
-      <!--                <executions>-->
-      <!--                    <execution>-->
-      <!--                        <id>copy-dependencies</id>-->
-      <!--                        <phase>package</phase>-->
-      <!--                        <goals>-->
-      <!--                            <goal>copy-dependencies</goal>-->
-      <!--                        </goals>-->
-      <!--                        <configuration>-->
-      <!--                            <outputDirectory>${build.lib}</outputDirectory>-->
-      <!--                            <overWriteReleases>false</overWriteReleases>-->
-      <!--                            <overWriteSnapshots>false</overWriteSnapshots>-->
-      <!--                            <overWriteIfNewer>true</overWriteIfNewer>-->
-      <!--                        </configuration>-->
-      <!--                    </execution>-->
-      <!--                </executions>-->
-      <!--            </plugin>-->
+<!--      <plugin>-->
+<!--          <groupId>org.apache.maven.plugins</groupId>-->
+<!--          <artifactId>maven-dependency-plugin</artifactId>-->
+<!--          <version>3.1.2</version>-->
+<!--          <executions>-->
+<!--              <execution>-->
+<!--                  <id>copy-dependencies</id>-->
+<!--                  <phase>package</phase>-->
+<!--                  <goals>-->
+<!--                      <goal>copy-dependencies</goal>-->
+<!--                  </goals>-->
+<!--                  <configuration>-->
+<!--                      <outputDirectory>${build.lib}</outputDirectory>-->
+<!--                      <overWriteReleases>false</overWriteReleases>-->
+<!--                      <overWriteSnapshots>false</overWriteSnapshots>-->
+<!--                      <overWriteIfNewer>true</overWriteIfNewer>-->
+<!--                  </configuration>-->
+<!--              </execution>-->
+<!--          </executions>-->
+<!--      </plugin>-->
 
 <!--      <plugin>-->
 <!--        <groupId>org.bluestemsoftware.open.maven.plugin</groupId>-->
@@ -153,7 +153,7 @@
 <!--            <configuration>-->
 <!--              <headerType>gui</headerType>-->
 <!--              <outfile>target/${project.name}.exe</outfile>-->
-<!--              <jar>target/ksenia-0.0.3-alpha.jar</jar> &lt;!&ndash; 'shaded' is the value set on shadedClassifierName above &ndash;&gt;-->
+<!--              <jar>target/miniCRM-0.2.0-beta.jar</jar>-->
 <!--              <errTitle>App Err</errTitle>-->
 <!--              <classPath>-->
 <!--                <mainClass>${start-class}</mainClass>-->
@@ -161,7 +161,7 @@
 <!--              <icon>src/main/resources/icon.ico</icon>-->
 <!--              <jre>-->
 <!--                <minVersion>1.8.0</minVersion>-->
-<!--                &lt;!&ndash;                                <maxVersion>1..0</maxVersion>&ndash;&gt;-->
+<!--                &lt;!&ndash; <maxVersion>1..0</maxVersion>&ndash;&gt;-->
 <!--                <initialHeapSize>128</initialHeapSize>-->
 <!--                <maxHeapSize>1024</maxHeapSize>-->
 <!--              </jre>-->

@@ -42,11 +42,11 @@ public class MainController implements Initializable {
     @FXML
     private AnchorPane rootPane;
     @FXML
-    private Text username, countcalls;
+    private Text username, countcalls, svo;
     @FXML
     private TextArea logArea;
     @FXML
-    private TextField phone, tid, title, settingsLogin;
+    private TextField phone, tid, title, settingsLogin, settingsPath;
     @FXML
     private TitledPane history;
     @FXML
@@ -98,7 +98,7 @@ public class MainController implements Initializable {
      */
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        this.initializeLogger();
+        //this.initializeLogger();
         this.initializeUsernameSettings();
         this.initializeFollowCheckBox();
         this.initializeDateTime();
@@ -106,6 +106,7 @@ public class MainController implements Initializable {
         this.initializeCallHistoryDate();
         this.initializeCallHistoryTable();
         this.initializeManually();
+        this.initializeExportPath();
     }
 
     /**
@@ -199,6 +200,10 @@ public class MainController implements Initializable {
         this.callhistorytable.getColumns().addAll(new TableColumn[]{dateCol, phoneCol, tidCol, typeCol, subtypeCol, detailsCol, titleCol});
 
         this.loadCallHistoryTable();
+    }
+
+    private void initializeExportPath() {
+        this.settingsPath.setText((String) settingsService.getSettings("application.shared.export.path").getValue());
     }
 
     private void loadCallHistoryTable() {

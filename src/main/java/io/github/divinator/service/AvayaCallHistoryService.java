@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.nio.file.Paths;
@@ -41,7 +40,7 @@ public class AvayaCallHistoryService {
 
         try {
             this.nextSessionId = this.getCallHistoryInformation().getNextSessionId();
-        } catch (CallLogServiceException var4) {
+        } catch (CallLogServiceException e) {
             this.LOG.error("Журнал истории звонков не найден.");
         }
     }
@@ -60,42 +59,53 @@ public class AvayaCallHistoryService {
                 JAXBContext jaxbContext = JAXBContext.newInstance(CallHistoryInformation.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
                 return (CallHistoryInformation) unmarshaller.unmarshal(historyFile);
-            } catch (JAXBException var4) {
-                this.LOG.error(var4.getLocalizedMessage());
+            } catch (Exception e) {
                 throw new CallLogServiceException("История звонков не прочитана.");
             }
         }
+
         throw new CallLogServiceException("История звонков не прочитана.");
     }
 
+    /**
+     * Метод описывает задание для просмотра файла "history.xml" программы Avaya one-X Communicator на наличие изменений.
+     */
     @Scheduled(fixedRate = 1000L)
     public void follow() {
-        if (Boolean.parseBoolean((String) settingsService.getSettings("application.calllog.follow").getValue())) {
+        if (Boolean.parseBoolean((String) settingsService.getSettings("application.history.follow").getValue())) {
             try {
                 CallHistoryInformation callHistoryInformation = this.getCallHistoryInformation();
 
                 if (!this.nextSessionId.equals(callHistoryInformation.getNextSessionId())) {
-                    CallHistoryData lastIncoming = callHistoryInformation.getLastIncoming();
 
-                    mainController.updatePhone(lastIncoming.getFirstContact().getPhoneNumber());
+                    if (!callHistoryInformation.getLast().isCommand()) {
+                        CallHistoryData lastIncoming = callHistoryInformation.getLastIncoming();
 
-                    ZonedDateTime startTime = Instant.ofEpochSecond(
-                            Long.parseLong(lastIncoming.getStartTime())).atZone(ZoneId.of("UTC"));
+                        mainController.updatePhone(lastIncoming.getFirstContact().getPhoneNumber());
 
-                    mainController.updateDateTime(
-                            startTime.withZoneSameInstant(
-                                    ZoneId.of((String) settingsService.getSettings("application.zone").getValue())));
+                        ZonedDateTime startTime = Instant.ofEpochSecond(
+                                Long.parseLong(lastIncoming.getStartTime())).atZone(ZoneId.of("UTC"));
 
-                    mainController.updateManually(false);
+                        System.out.println(startTime.toLocalTime());
 
-                    LOG.info(String.format("Новый входящий звонок: %s", lastIncoming.getFirstContact().getPhoneNumber()));
+                        System.out.println(startTime.withZoneSameInstant(
+                                ZoneId.of((String) settingsService.getSettings("application.zone").getValue())).toLocalTime());
+
+                        mainController.updateDateTime(
+                                startTime.withZoneSameInstant(
+                                        ZoneId.of((String) settingsService.getSettings("application.zone").getValue())));
+
+                        mainController.updateManually(false);
+
+                        LOG.info(String.format("Последний входящий звонок: %s", lastIncoming.getFirstContact().getPhoneNumber()));
+                    }
 
                     this.nextSessionId = callHistoryInformation.getNextSessionId();
                 }
 
             } catch (CallLogServiceException e) {
                 LOG.error(e.getLocalizedMessage());
-                SettingsEntity follow = this.settingsService.getSettings("application.calllog.follow");
+                SettingsEntity follow = this.settingsService.getSettings("application.history.follow");
                 follow.setValue(false);
                 settingsService.setSettings(follow);
             }

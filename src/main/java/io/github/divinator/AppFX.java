@@ -19,7 +19,6 @@ public abstract class AppFX extends Application {
     private final Logger LOG = LoggerFactory.getLogger(AppFX.class);
     private Parameters parameters;
     private ConfigurableApplicationContext context;
-    //private Parent rootNode;
     @Autowired
     private FXMLViewService fxmlViewService;
     @Autowired
@@ -46,7 +45,6 @@ public abstract class AppFX extends Application {
             primaryStage.setMinHeight(600.0D);
             primaryStage.setHeight(600.0D);
             primaryStage.getIcons().add(new Image("img/ico_64_64.png"));
-            //primaryStage.initStyle(StageStyle.UNIFIED);
             primaryStage.show();
             this.LOG.info("Приложение запущено");
 

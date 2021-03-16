@@ -27,12 +27,36 @@ public class SettingsService {
     }
 
     /**
+     * Метод возвращает значение настройки по ее названию.
+     *
+     * @param name Название настройки.
+     * @return Значение настройки.
+     */
+    public Object getSettingsValue(String name) {
+        return this.getSettings(name).getValue();
+    }
+
+    /**
      * Метод добавляет либо изменяет настройку.
      *
      * @param settings Настройка.
      */
     public void setSettings(SettingsEntity settings) {
         settingsRepository.save(settings);
+    }
+
+    /**
+     * Метод добавляет либо изменяет значение настройки по ее названию.
+     *
+     * @param name  Название настройки.
+     * @param value Значение настройки.
+     */
+    public void setSettingValue(String name, Object value) {
+        settingsRepository.save(
+                (this.getSettings(name) == null)
+                        ? new SettingsEntity(name, value)
+                        : this.getSettings(name).setValue(value)
+        );
     }
 
     /**

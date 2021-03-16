@@ -98,7 +98,7 @@ public class MainController implements Initializable {
      */
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        //this.initializeLogger();
+        this.initializeLogger();
         this.initializeUsernameSettings();
         this.initializeFollowCheckBox();
         this.initializeDateTime();
@@ -149,7 +149,7 @@ public class MainController implements Initializable {
      * Метод инициализирует значение чек-бокса для слежения за журналом Avaya One-X.
      */
     private void initializeFollowCheckBox() {
-        String value = (String) settingsService.getSettings("application.calllog.follow").getValue();
+        String value = (String) settingsService.getSettings("application.history.follow").getValue();
         this.followCheckBox.setSelected(Boolean.parseBoolean(value));
     }
 
@@ -203,7 +203,7 @@ public class MainController implements Initializable {
     }
 
     private void initializeExportPath() {
-        this.settingsPath.setText((String) settingsService.getSettings("application.shared.export.path").getValue());
+        this.settingsPath.setText((String) settingsService.getSettings("application.shared.export.file").getValue());
     }
 
     private void loadCallHistoryTable() {
@@ -357,7 +357,7 @@ public class MainController implements Initializable {
     @FXML
     public void onSaveSettings() {
         settingsService.setAllSettings(Arrays.asList(
-                settingsService.getSettings("application.calllog.follow")
+                settingsService.getSettings("application.history.follow")
                         .setValue(String.valueOf(this.followCheckBox.isSelected()).toUpperCase(Locale.ROOT)),
                 settingsService.getSettings("user.name").setValue(settingsLogin.getText())
         ));

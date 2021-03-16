@@ -1,0 +1,28 @@
+{
+  "properties": [
+    {
+      "name": "application.fx.resource.bundle",
+      "type": "java.lang.String",
+      "description": "Description for application.fx.resource.bundle."
+    },
+    {
+      "name": "application.fx.resource.bundle.locale",
+      "type": "java.lang.String",
+      "description": "Description for application.fx.resource.bundle.locale."
+    },
+    {
+      "name": "application.db.zone",
+      "type": "java.lang.String",
+      "description": "Description for application.db.zone."
+    },
+    {
+      "name": "application.calllog.follow",
+      "type": "java.lang.String",
+      "description": "Description for application.calllog.follow."
+    },
+    {
+      "name": "application.shared.export",
+      "type": "java.lang.String",
+      "description": "Description for application.shared.export."
+    }
+  ] }

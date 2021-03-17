@@ -42,8 +42,12 @@ public class CSVService {
                     String type = callHistory.getType();
                     String subtype = callHistory.getSubtype();
                     String details = callHistory.getDetails();
-                    String tid = callHistory.getTid();
-                    String title = String.format("Телефон:%s\t%s", callHistory.getPhone(), callHistory.getTitle());
+                    String tid = (callHistory.getTid().isEmpty() || callHistory.getTid().length() == 0) ? null : callHistory.getTid();
+                    String title = String.format(
+                            "Телефон:%s%s",
+                            callHistory.getPhone(),
+                            (callHistory.getTitle().isEmpty() || callHistory.getTitle().length() == 0) ? null : " \t" + callHistory.getTitle()
+                    );
                     String error = "";
                     try {
                         csvPrinter.printRecord(

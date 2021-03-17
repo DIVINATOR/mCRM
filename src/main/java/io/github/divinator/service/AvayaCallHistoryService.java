@@ -86,11 +86,6 @@ public class AvayaCallHistoryService {
                         ZonedDateTime startTime = Instant.ofEpochSecond(
                                 Long.parseLong(lastIncoming.getStartTime())).atZone(ZoneId.of("UTC"));
 
-                        System.out.println(startTime.toLocalTime());
-
-                        System.out.println(startTime.withZoneSameInstant(
-                                ZoneId.of((String) settingsService.getSettings("application.zone").getValue())).toLocalTime());
-
                         mainController.updateDateTime(
                                 startTime.withZoneSameInstant(
                                         ZoneId.of((String) settingsService.getSettings("application.zone").getValue())));

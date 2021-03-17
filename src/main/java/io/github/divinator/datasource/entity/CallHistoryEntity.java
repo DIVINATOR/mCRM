@@ -31,12 +31,14 @@ public class CallHistoryEntity {
     private String title;
     @Column("manually")
     private boolean manually;
+    @Column("transferred")
+    private boolean transferred;
 
     public CallHistoryEntity() {
 
     }
 
-    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, long typeId, long subtypeId, long detailsId, String tid, String title, boolean manually) {
+    public CallHistoryEntity(String phone, LocalDateTime createDateTime, LocalDateTime dateTime, long typeId, long subtypeId, long detailsId, String tid, String title, boolean manually, boolean transferred) {
         this.phone = phone;
         this.createDateTime = createDateTime;
         this.dateTime = dateTime;
@@ -46,6 +48,7 @@ public class CallHistoryEntity {
         this.tid = tid;
         this.title = title;
         this.manually = manually;
+        this.transferred = transferred;
     }
 
     public long getId() {
@@ -86,5 +89,9 @@ public class CallHistoryEntity {
 
     public boolean isManually() {
         return manually;
+    }
+
+    public boolean isTransferred() {
+        return transferred;
     }
 }

@@ -5,6 +5,7 @@ import io.github.divinator.datasource.repository.CallHistoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Service
@@ -31,5 +32,15 @@ public class CallHistoryService {
                 localDateFrom.atTime(LocalTime.MIDNIGHT),
                 localDateTo.atTime(LocalTime.MAX)
         );
+    }
+
+    public float getFCR(LocalDate localDateFrom, LocalDate localDateTo) {
+        LocalDateTime localDateTimeFrom = localDateFrom.atTime(LocalTime.MIDNIGHT);
+        LocalDateTime localDateTimeTo = localDateFrom.atTime(LocalTime.MAX);
+
+        Long transferred = callHistoryRepository.countAllByTransferredFalseAndCreateDateTimeBetween(localDateTimeFrom, localDateTimeTo);
+        Long all = callHistoryRepository.countAllByCreateDateTimeBetween(localDateTimeFrom, localDateTimeTo);
+
+        return Math.round((transferred * 100.0f) / all);
     }
 }

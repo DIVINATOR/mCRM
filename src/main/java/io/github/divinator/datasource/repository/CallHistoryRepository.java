@@ -20,4 +20,8 @@ public interface CallHistoryRepository extends PagingAndSortingRepository<CallHi
     Iterable<CallHistoryEntity> findAllByCreateDateTimeAfter(LocalDate localDate);
 
     Iterable<CallHistoryEntity> findAllByCreateDateTimeBetween(LocalDateTime localDateTimeFrom, LocalDateTime localDateTimeTo);
+
+    Long countAllByTransferredFalseAndCreateDateTimeBetween(LocalDateTime localDateTimeFrom, LocalDateTime localDateTimeTo);
+
+    Long countAllByCreateDateTimeBetween(LocalDateTime localDateTimeFrom, LocalDateTime localDateTimeTo);
 }

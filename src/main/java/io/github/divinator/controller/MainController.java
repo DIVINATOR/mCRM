@@ -42,7 +42,7 @@ public class MainController implements Initializable {
     @FXML
     private AnchorPane rootPane;
     @FXML
-    private Text username, countcalls, svo;
+    private Text username, calls, svo, fcr;
     @FXML
     private TextArea logArea;
     @FXML
@@ -58,7 +58,7 @@ public class MainController implements Initializable {
     @FXML
     private Circle indicator;
     @FXML
-    private CheckBox followCheckBox;
+    private CheckBox followCheckBox, transferredCheckBox;
 
     private final Logger LOG = LoggerFactory.getLogger(MainController.class);
     private final SettingsService settingsService;
@@ -172,7 +172,7 @@ public class MainController implements Initializable {
     private void initializeCallHistoryTable() {
 
         TableColumn<CallHistoryPojo, String> dateCol = new TableColumn<>();
-        dateCol.setText(this.resources.getString("gui.tab.0.label.date"));
+        dateCol.setText(this.resources.getString("gui.tab.0.label.time"));
         dateCol.setCellValueFactory(new PropertyValueFactory("dateTime"));
 
         TableColumn<CallHistoryPojo, String> phoneCol = new TableColumn();
@@ -206,10 +206,19 @@ public class MainController implements Initializable {
         this.settingsPath.setText((String) settingsService.getSettings("application.shared.export.file").getValue());
     }
 
+    /**
+     * Метод инициализирует показатели на линии.
+     */
+    private void initializeStatisticsValue() {
+
+    }
+
     private void loadCallHistoryTable() {
         List<CallHistoryPojo> collect = loadCallHistory();
         this.callhistorytable.getItems().setAll(FXCollections.observableArrayList(collect));
-        this.countcalls.setText(String.valueOf(this.callhistorytable.getItems().size()));
+        this.updateCalls(this.callhistorytable.getItems().size());
+        this.updateFcr(callHistoryService.getFCR(this.callhistorydate.getValue(), this.callhistorydate.getValue()));
+        //this.calls.setText(String.valueOf());
     }
 
     private List<CallHistoryPojo> loadCallHistory() {
@@ -232,6 +241,7 @@ public class MainController implements Initializable {
         this.updateTid(null);
         this.updateTitle(null);
         this.updateManually(true);
+        this.updateTransferred(false);
     }
 
     /**
@@ -338,7 +348,8 @@ public class MainController implements Initializable {
                     (getDetails().isPresent()) ? getDetails().get().getId() : 0,
                     getTid(),
                     (getTitle() != null && getTitle().length() != 0) ? getTitle() : null,
-                    getManually()
+                    getManually(),
+                    getTransferred()
             );
 
             CallHistoryEntity save = callHistoryService.saveCallHistoryEntity(callHistoryEntity);
@@ -491,6 +502,11 @@ public class MainController implements Initializable {
         this.title.setText(value);
     }
 
+    /**
+     * Метод возвращает флаг ручного заполнения формы.
+     *
+     * @return Флаг ручного заполнения формы.
+     */
     public boolean getManually() {
         return manually;
     }
@@ -503,6 +519,46 @@ public class MainController implements Initializable {
     public void updateManually(boolean value) {
         this.manually = value;
     }
+
+    /**
+     * Метод возвращает флаг переведенного звонка.
+     *
+     * @return Флаг переведенного звонка.
+     */
+    public boolean getTransferred() {
+        return transferredCheckBox.isSelected();
+    }
+
+    public void updateTransferred(boolean value) {
+        transferredCheckBox.setSelected(value);
+    }
+
+    /**
+     * Метод обновляет количество звонков.
+     *
+     * @param value Количество звонков.
+     */
+    public void updateCalls(Number value) {
+        this.calls.setText(String.format("%s", value));
+    }
+
+    public void updateSvo(Number value) {
+        this.svo.setText(
+                String.format(
+                        "Текущий результат: %s / Необходимый %s",
+                        value,
+                        settingsService.getSettingsValue("application.statistics.svo"))
+        );
+    }
+
+    public void updateFcr(Number value) {
+        this.fcr.setText(
+                String.format(
+                        "Текущий результат: %s / Необходимый %s", value,
+                        settingsService.getSettingsValue("application.statistics.fcr"))
+        );
+    }
+
 
     /**
      * Метод выполняет валидацию заполнения полей ввода.

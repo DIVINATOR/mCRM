@@ -36,7 +36,9 @@ public class AppConfig {
                     new SettingsEntity("application.history.follow", follow),
                     new SettingsEntity("application.history.file", getHistoryPath().toString()),
                     new SettingsEntity("application.shared.export", shared),
-                    new SettingsEntity("application.shared.export.file", getSharedExportPath().toString())
+                    new SettingsEntity("application.shared.export.file", getSharedExportPath().toString()),
+                    new SettingsEntity("application.statistics.svo", 130),
+                    new SettingsEntity("application.statistics.fcr", 97)
             ));
             LOG.info("Initializing default configuration.");
         }

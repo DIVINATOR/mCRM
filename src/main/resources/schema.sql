@@ -51,5 +51,6 @@ create table if not exists "t_call_history"
     "terminal_id"     varchar,
     "title"           varchar,
     "manually"        boolean,
+    "transferred"     boolean,
     primary key (ID)
 );

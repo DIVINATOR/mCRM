@@ -18,7 +18,7 @@ public class CallHistoryPojo {
     public CallHistoryPojo(CallHistoryEntity callHistoryEntity, CatalogService catalogService) {
         this.id = callHistoryEntity.getId();
 
-        this.dateTime = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
+        this.dateTime = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
 
         this.phone = callHistoryEntity.getPhone();
         this.type = catalogService.getCatalogType(callHistoryEntity.getTypeId()).get().getName();

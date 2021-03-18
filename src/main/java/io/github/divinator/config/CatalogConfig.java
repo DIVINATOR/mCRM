@@ -170,7 +170,10 @@ public class CatalogConfig {
 
             // Прочее
             CatalogType type4 = new CatalogType("Прочее", new TreeSet<>(Arrays.asList(
-                    new CatalogSubtype("Срыв_звонка")
+                    new CatalogSubtype("Срыв_звонка"),
+                    new CatalogSubtype("Магнит", new TreeSet<>(Arrays.asList(
+                            new CatalogDetails("Консультация по ошибкам")
+                    )))
             )));
 
             // Смарт_касса

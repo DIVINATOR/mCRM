@@ -8,6 +8,7 @@ public class CallHistoryPojo {
 
     private final long id;
     private final String dateTime;
+    private final String time;
     private final String phone;
     private final String type;
     private final String subtype;
@@ -17,9 +18,8 @@ public class CallHistoryPojo {
 
     public CallHistoryPojo(CallHistoryEntity callHistoryEntity, CatalogService catalogService) {
         this.id = callHistoryEntity.getId();
-
-        this.dateTime = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-
+        this.dateTime = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s"));
+        this.time = callHistoryEntity.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         this.phone = callHistoryEntity.getPhone();
         this.type = catalogService.getCatalogType(callHistoryEntity.getTypeId()).get().getName();
 
@@ -40,6 +40,10 @@ public class CallHistoryPojo {
 
     public String getDateTime() {
         return dateTime;
+    }
+
+    public String getTime() {
+        return time;
     }
 
     public String getPhone() {

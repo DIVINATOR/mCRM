@@ -44,9 +44,9 @@ public class CSVService {
                     String details = callHistory.getDetails();
                     String tid = (callHistory.getTid().isEmpty() || callHistory.getTid().length() == 0) ? null : callHistory.getTid();
                     String title = String.format(
-                            "Телефон:%s%s",
+                            "Телефон:%s %s",
                             callHistory.getPhone(),
-                            (callHistory.getTitle().isEmpty() || callHistory.getTitle().length() == 0) ? null : " \t" + callHistory.getTitle()
+                            (callHistory.getTitle() == null) ? "" : callHistory.getTitle()
                     );
                     String error = "";
                     try {
@@ -60,6 +60,99 @@ public class CSVService {
                                 tid,
                                 title,
                                 error
+                        );
+                    } catch (IOException e) {
+                        //e.printStackTrace();
+                    }
+                });
+            }
+        } catch (IOException e) {
+            LOG.error(String.format("Ошибка экспорта журнала звонков (\"%s\")", e.getMessage()));
+        }
+    }
+
+    public void writeInShared(File csv, String username, Iterable<CallHistoryPojo> values) {
+        try (PrintWriter out = new PrintWriter(csv, "Cp1251")) {
+            try (CSVPrinter csvPrinter = new CSVPrinter(
+                    out,
+                    CSVFormat.EXCEL
+                            .withHeader("Дата", "Время", "Дата+Время", "Подтип", "Подтип", "Детали", "TID", "Описание", "Фиксирование сбоя Avaya one-x", "Пользователь")
+                            .withQuoteMode(QuoteMode.ALL)
+                            .withDelimiter(';')
+            )) {
+                values.forEach(callHistory -> {
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s");
+                    LocalDateTime dateTime = LocalDateTime.parse(callHistory.getDateTime(), dateTimeFormatter);
+                    String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                    String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
+                    String type = callHistory.getType();
+                    String subtype = callHistory.getSubtype();
+                    String details = callHistory.getDetails();
+                    String tid = (callHistory.getTid().isEmpty() || callHistory.getTid().length() == 0) ? null : callHistory.getTid();
+                    String title = String.format(
+                            "Телефон:%s %s",
+                            callHistory.getPhone(),
+                            (callHistory.getTitle() == null) ? "" : callHistory.getTitle()
+                    );
+                    String error = "";
+                    try {
+                        csvPrinter.printRecord(
+                                date,
+                                time,
+                                callHistory.getDateTime(),
+                                type,
+                                subtype,
+                                details,
+                                tid,
+                                title,
+                                error,
+                                username
+                        );
+                    } catch (IOException e) {
+                        //e.printStackTrace();
+                    }
+                });
+            }
+        } catch (IOException e) {
+            LOG.error(String.format("Ошибка экспорта журнала звонков (\"%s\")", e.getMessage()));
+        }
+    }
+
+    public void writeAppendInShared(File csv, String username, Iterable<CallHistoryPojo> values) {
+        try (PrintWriter out = new PrintWriter(csv, "Cp1251")) {
+            try (CSVPrinter csvPrinter = new CSVPrinter(
+                    out,
+                    CSVFormat.EXCEL
+                            .withQuoteMode(QuoteMode.ALL)
+                            .withDelimiter(';')
+            )) {
+                values.forEach(callHistory -> {
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy H:m:s");
+                    LocalDateTime dateTime = LocalDateTime.parse(callHistory.getDateTime(), dateTimeFormatter);
+                    String date = dateTime.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                    String time = String.format("%s:%s", String.valueOf(dateTime.getHour()).length() == 1 ? String.format("0%s", dateTime.getHour()) : dateTime.getHour(), String.valueOf(dateTime.getMinute()).length() == 1 ? String.format("0%s", dateTime.getMinute()) : dateTime.getMinute());
+                    String type = callHistory.getType();
+                    String subtype = callHistory.getSubtype();
+                    String details = callHistory.getDetails();
+                    String tid = (callHistory.getTid().isEmpty() || callHistory.getTid().length() == 0) ? null : callHistory.getTid();
+                    String title = String.format(
+                            "Телефон:%s %s",
+                            callHistory.getPhone(),
+                            (callHistory.getTitle() == null) ? "" : callHistory.getTitle()
+                    );
+                    String error = "";
+                    try {
+                        csvPrinter.printRecord(
+                                date,
+                                time,
+                                callHistory.getDateTime(),
+                                type,
+                                subtype,
+                                details,
+                                tid,
+                                title,
+                                error,
+                                username
                         );
                     } catch (IOException e) {
                         //e.printStackTrace();

@@ -474,7 +474,7 @@
                                                                <children>
                                                                   <HBox alignment="CENTER_LEFT">
                                                                      <children>
-                                                                        <CheckBox fx:id="followCheckBox1" disable="true" mnemonicParsing="false" text="%gui.tab.2.accordion.1.menu.1.label" />
+                                                                        <CheckBox fx:id="sharedCheckBox" disable="true" mnemonicParsing="false" text="%gui.tab.2.accordion.1.menu.1.label" />
                                                                      </children>
                                                                   </HBox>
                                                                </children>

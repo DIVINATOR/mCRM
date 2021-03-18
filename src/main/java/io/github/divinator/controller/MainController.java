@@ -30,6 +30,7 @@ import java.awt.*;
 import java.io.File;
 import java.net.URL;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.function.Predicate;
@@ -58,7 +59,7 @@ public class MainController implements Initializable {
     @FXML
     private Circle indicator;
     @FXML
-    private CheckBox followCheckBox, transferredCheckBox;
+    private CheckBox followCheckBox, transferredCheckBox, sharedCheckBox;
 
     private final Logger LOG = LoggerFactory.getLogger(MainController.class);
     private final SettingsService settingsService;
@@ -98,9 +99,10 @@ public class MainController implements Initializable {
      */
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        this.initializeLogger();
+        //this.initializeLogger();
         this.initializeUsernameSettings();
         this.initializeFollowCheckBox();
+        this.initializeSharedCheckBox();
         this.initializeDateTime();
         this.initializeType();
         this.initializeCallHistoryDate();
@@ -153,6 +155,11 @@ public class MainController implements Initializable {
         this.followCheckBox.setSelected(Boolean.parseBoolean(value));
     }
 
+    private void initializeSharedCheckBox() {
+        String value = (String) settingsService.getSettings("application.shared.export").getValue();
+        this.sharedCheckBox.setSelected(Boolean.parseBoolean(value));
+    }
+
     /**
      * Метод инициализирует список "Тип" тематики обращения.
      */
@@ -173,7 +180,7 @@ public class MainController implements Initializable {
 
         TableColumn<CallHistoryPojo, String> dateCol = new TableColumn<>();
         dateCol.setText(this.resources.getString("gui.tab.0.label.time"));
-        dateCol.setCellValueFactory(new PropertyValueFactory("dateTime"));
+        dateCol.setCellValueFactory(new PropertyValueFactory("time"));
 
         TableColumn<CallHistoryPojo, String> phoneCol = new TableColumn();
         phoneCol.setText(this.resources.getString("gui.tab.0.label.phone"));
@@ -370,6 +377,8 @@ public class MainController implements Initializable {
         settingsService.setAllSettings(Arrays.asList(
                 settingsService.getSettings("application.history.follow")
                         .setValue(String.valueOf(this.followCheckBox.isSelected()).toUpperCase(Locale.ROOT)),
+                settingsService.getSettings("application.shared.export")
+                        .setValue(String.valueOf(this.sharedCheckBox.isSelected()).toUpperCase(Locale.ROOT)),
                 settingsService.getSettings("user.name").setValue(settingsLogin.getText())
         ));
     }
@@ -379,14 +388,34 @@ public class MainController implements Initializable {
      */
     @FXML
     public void onExportHistory() {
-        File export = this.directoryChooser(resources.getString("gui.tab.1.button.export.dialog.title"));
-        if (export != null) {
+        if (Boolean.parseBoolean((String) settingsService.getSettingsValue("application.shared.export"))) {
+            this.onSharedHistory();
+        } else {
+            File export = this.directoryChooser(resources.getString("gui.tab.1.button.export.dialog.title"));
+            if (export != null) {
+                List<CallHistoryPojo> callHistoryPojo = loadCallHistory();
+                String date = getCallHistoryDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                File file = new File(export.getPath().concat(String.format("\\%s-%s-export.csv", date, getUsername())));
 
-            List<CallHistoryPojo> callHistoryPojos = loadCallHistory();
-
-            File file = new File(export.getPath().concat("\\export.csv"));
-            csvService.write(file, callHistoryPojos);
+                csvService.write(file, callHistoryPojo);
+            }
         }
+    }
+
+    public void onSharedHistory() {
+        File shared = new File((String) settingsService.getSettingsValue("application.shared.export.file"));
+
+        if (!shared.exists()) {
+            csvService.writeInShared(shared, getUsername(), loadCallHistory());
+        } else {
+            while(shared.canWrite()) {
+                csvService.writeAppendInShared(shared, getUsername(), loadCallHistory());
+            }
+        }
+    }
+
+    public String getUsername() {
+        return this.username.getText();
     }
 
     /**
@@ -429,6 +458,10 @@ public class MainController implements Initializable {
         this.date.setValue(dateTime.toLocalDate());
         this.hour.setValue(convertUnitTimeFromInteger(dateTime.getHour()));
         this.minute.setValue(convertUnitTimeFromInteger(dateTime.getMinute()));
+    }
+
+    public LocalDate getCallHistoryDate() {
+        return this.callhistorydate.getValue();
     }
 
     private CatalogType getType() {

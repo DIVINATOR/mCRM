@@ -99,7 +99,7 @@ public class MainController implements Initializable {
      */
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        //this.initializeLogger();
+        this.initializeLogger();
         this.initializeUsernameSettings();
         this.initializeFollowCheckBox();
         this.initializeSharedCheckBox();
@@ -225,7 +225,6 @@ public class MainController implements Initializable {
         this.callhistorytable.getItems().setAll(FXCollections.observableArrayList(collect));
         this.updateCalls(this.callhistorytable.getItems().size());
         this.updateFcr(callHistoryService.getFCR(this.callhistorydate.getValue(), this.callhistorydate.getValue()));
-        //this.calls.setText(String.valueOf());
     }
 
     private List<CallHistoryPojo> loadCallHistory() {
